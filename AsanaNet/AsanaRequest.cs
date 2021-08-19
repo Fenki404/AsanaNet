@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Net;
@@ -7,6 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MiniJSON;
+using Newtonsoft.Json;
 
 namespace AsanaNet
 {
@@ -136,7 +138,21 @@ namespace AsanaNet
                 using (var dataStream = response.GetResponseStream())
                 using (var reader = new StreamReader(dataStream))
                 {
-                    var responseFromServer = reader.ReadToEnd();
+                    var definition = new
+                    {
+                        data = new object(),
+                        errors = new object()
+                    };
+
+                    var responseFromServer = await reader.ReadToEndAsync();
+                    var responseObject = JsonConvert.DeserializeAnonymousType(responseFromServer, definition);
+
+                    if (responseObject.errors != null)
+                    {
+                        throw new Exception(responseObject.errors?.ToString());
+                    }
+                    
+
                     if (respectOriginalStructure)
                     {
                         var result = PackOriginalContent<TAsanaObject>(responseFromServer);
@@ -144,6 +160,7 @@ namespace AsanaNet
                     }
                     else
                     {
+                        var t = typeof(TAsanaObject);
                         var result = PackAndSendResponse<TAsanaObject>(responseFromServer);
                         return result;
                     }
@@ -172,6 +189,7 @@ namespace AsanaNet
             if (_throttling)            
                 _throttlingWaitHandle.WaitOne();
 
+
             using (var response = await _request.GetResponseAsync())
             {
                 if (response.Headers["Retry-After"] != null)
@@ -184,7 +202,7 @@ namespace AsanaNet
                 using (var dataStream = response.GetResponseStream())
                 using (var reader = new StreamReader(dataStream))
                 {
-                    var responseFromServer = reader.ReadToEnd();
+                    var responseFromServer = await reader.ReadToEndAsync();
                     var result = PackAndSendResponseCollection<TAsanaObject>(responseFromServer);
                     return result;
                 }

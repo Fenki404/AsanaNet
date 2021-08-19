@@ -13,12 +13,18 @@ namespace AsanaNet.Sample
     class Program
     {
         static void Main(string[] args)
-        {            
-            // Third example of how to perform
-//            ExecuteParallelAsync().Wait();
-//            ExecuteAsync().Wait();
-//            ExecuteWithTasks();         
-            MonitorProjectChanges(733775454290030, TimeSpan.FromSeconds(5)).Wait();
+        {
+            //Third example of how to perform
+
+            //ExecuteParallelAsync().Wait();
+            //ExecuteAsync().Wait();
+            //ExecuteWithTasks();
+            //MonitorProjectChanges(733775454290030, TimeSpan.FromSeconds(5)).Wait();
+
+            //GetProjectAsync(1200791760303935).Wait();
+            UpdateTaskAsync(1200791760303943).Wait();
+
+            //Console.ReadLine();
         }
 
         private static async Task MonitorProjectChanges(long projectId, TimeSpan interval)
@@ -52,6 +58,62 @@ namespace AsanaNet.Sample
                 Thread.Sleep(interval);
             }            
         }
+
+
+
+        private static async Task GetProjectAsync(long id)
+        {
+            // CONFIGURE YOUR ASANA API TOKEN IN APPSETTINGS.CONFIG FILE
+            Console.WriteLine("# Asana - Async Method #");
+            var apiToken = GetApiToken();
+            var asana = new Asana(apiToken, AuthenticationType.Basic, errorCallback);
+
+            var me = await asana.GetMeAsync();
+            Console.WriteLine("Hello, " + me.Name);
+
+            var startTime = DateTime.Now;
+
+            var project = await asana.GetProjectByIdAsync(id, AsanaProject.SerializePropertiesToArgs());
+            var tasks = await asana.GetTasksInAProjectAsync(project, AsanaTask.SerializePropertiesToArgs());
+            Console.WriteLine($"    Project: {project.Name}  ID: {project.ID}    {tasks.Count()} Tasks");
+            foreach (AsanaTask task in tasks)
+                Console.WriteLine($"      Task: {task.Name}  {task.StartAt?.DateTime} -> {task.DueAt?.DateTime}");
+
+            Console.WriteLine();
+            Console.WriteLine("Execution time " + (DateTime.Now - startTime));
+            Console.ReadLine();
+        }
+
+        private static async Task UpdateTaskAsync(long id)
+        {
+            // CONFIGURE YOUR ASANA API TOKEN IN APPSETTINGS.CONFIG FILE
+            Console.WriteLine("# Asana - Async Method #");
+            var apiToken = GetApiToken();
+            var asana = new Asana(apiToken, AuthenticationType.Basic, errorCallback);
+
+            var me = await asana.GetMeAsync();
+            Console.WriteLine("Hello, " + me.Name);
+
+            var startTime = DateTime.Now;
+
+
+            var task = await asana.GetTaskByIdAsync(id, AsanaTask.SerializePropertiesToArgs());
+            Console.WriteLine($"      Task: {task.Name}  {task.StartAt?.DateTime} -> {task.DueAt?.DateTime}");
+            task.Notes = "updated Note";
+
+            if (task.DueAt != null)
+                task.DueAt.DateTime += TimeSpan.FromMinutes(10);
+            await task.Save();
+
+            task = await asana.GetTaskByIdAsync(id, AsanaTask.SerializePropertiesToArgs());
+            Console.WriteLine($"      Task: {task.Name}  {task.StartAt?.DateTime} -> {task.DueAt?.DateTime}");
+
+
+            Console.WriteLine();
+            Console.WriteLine("Execution time " + (DateTime.Now - startTime));
+            Console.ReadLine();
+        }
+
 
         /// <summary>
         /// New API format

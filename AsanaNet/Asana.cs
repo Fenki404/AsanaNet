@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Net;
@@ -8,8 +10,10 @@ using System.Threading;
 using System.IO;
 using System.Xml;
 using System.Threading.Tasks;
-
+using AsanaNet.Interfaces;
+using AsanaNet.Objects;
 using MiniJSON;
+using Newtonsoft.Json;
 
 namespace AsanaNet
 {
@@ -23,7 +27,7 @@ namespace AsanaNet
 	}
 
     [Serializable]
-    public partial class Asana
+    public partial class Asana : IAsana
     {        
         #region Variables
 
@@ -108,13 +112,13 @@ namespace AsanaNet
         /// <summary>
         /// Creates a base request object with authorization data AND POST data.
         /// </summary>
-        /// <param name="append">The string we want to append to the request</param>
+        /// <param name="args">uri arguments</param>
         /// <returns></returns>
         private AsanaRequest GetBaseRequestWithParams(AsanaFunction function, Dictionary<string, object> args, params object[] obj)
         {
             string url = _baseUrl + string.Format(new PropertyFormatProvider(), function.Url, obj);
 
-            if (args.Count > 0)
+            if (args != null && args.Count > 0)
             {
                 url += "?";
                 foreach (var kv in args)
@@ -130,9 +134,55 @@ namespace AsanaNet
             request.Method = function.Method;
             request.ContentType = "application/x-www-form-urlencoded";
             request.ContentLength = 0;
+            
+            return new AsanaRequest(request, this);
+        }
+
+        /// <summary>
+        /// Creates a base request object with authorization data AND POST data.
+        /// </summary>
+        /// <param name="args">uri arguments</param>
+        /// <returns></returns>
+        private AsanaRequest GetBaseRequestWithParamsJson(AsanaFunction function, Dictionary<string, object> args, params object[] obj)
+        {
+            string url = _baseUrl + string.Format(new PropertyFormatProvider(), function.Url, obj);
+
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            if (AuthType == AuthenticationType.Basic)
+                request.Headers["Authorization"] = "Basic " + EncodedAPIKey;
+            else if (AuthType == AuthenticationType.OAuth)
+                request.Headers["Authorization"] = "Bearer " + OAuthToken;
+            request.Method = function.Method;
+            request.SendChunked = false;
+            request.AllowWriteStreamBuffering = false;
+
+            if (args != null && args.Count > 0)
+            {
+                var json = JsonConvert.SerializeObject(args);
+
+                request.Accept = "Accept=application/json";
+                request.ContentType = "application/json";
+                using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+                {
+                    var jsonString = "{\"data\": " +  json + "}";
+                    //jsonString = "{\"data\": { \"name\": \"Buy catnip\" \"}";
+
+                    streamWriter.Write(jsonString);
+                    request.ContentLength = jsonString.Length;
+                }
+
+            }
+            else
+            {
+                request.ContentType = "application/x-www-form-urlencoded";
+                request.ContentLength = 0;
+            }
+
 
             return new AsanaRequest(request, this);
         }
+
 
         /// <summary>
         /// Converts the raw string into dictionary format
@@ -167,6 +217,7 @@ namespace AsanaNet
         /// <param name="error"></param>
         internal void ErrorCallback(string requestString, string error, string responseContent)
         {
+            Debug.WriteLine($"error: {error},   request: {requestString}, response: {responseContent}");
             _errorCallback(requestString, error, responseContent);
         }
 
@@ -232,8 +283,30 @@ namespace AsanaNet
             if (func == null)
                 func = idata.IsObjectLocal ? afa.Create : afa.Update;
 
-            request = GetBaseRequestWithParams(func, data, obj);
+            request = GetBaseRequestWithParamsJson(func, data, obj);
             return request.Go((o, h) => RepackAndCallback(o, obj), ErrorCallback);
+        }    
+        
+        /// <summary>
+        /// Tells the asana object to save the specified object
+        /// </summary>
+        /// <param name="obj"></param>
+        internal Task<T> SaveAsync<T>(T obj, AsanaFunction func, Dictionary<string, object> data = null) where T: AsanaObject
+        {
+            IAsanaData idata = obj as IAsanaData;
+            if (idata == null)
+                throw new NullReferenceException("All AsanaObjects must implement IAsanaData in order to Save themselves.");
+
+            if (data == null)
+                data = Parsing.Serialize(obj, true, !idata.IsObjectLocal);
+            AsanaRequest request = null;
+            AsanaFunctionAssociation afa = AsanaFunction.GetFunctionAssociation(obj.GetType());
+
+            if (func == null)
+                func = idata.IsObjectLocal ? afa.Create : afa.Update;
+
+            request = GetBaseRequestWithParamsJson(func, data, obj);
+            return request.GoAsync<T>();
         }
 
         /// <summary>

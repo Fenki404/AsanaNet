@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AsanaNet.Objects;
 
 namespace AsanaNet
 {
@@ -17,6 +18,10 @@ namespace AsanaNet
     [Serializable]
     public class AsanaTask : AsanaObject, IAsanaData
     {
+        private AsanaDateTime _dueAt;
+        private AsanaDateTime _dueOn;
+        private AsanaDateTime _startAt;
+
         [AsanaDataAttribute     ("name",            SerializationFlags.Required)]
         public string           Name                { get; set; }
 
@@ -35,8 +40,58 @@ namespace AsanaNet
         [AsanaDataAttribute     ("completed_at",    SerializationFlags.Omit)]
         public AsanaDateTime    CompletedAt         { get; private set; }
 
-        [AsanaDataAttribute     ("due_on",          SerializationFlags.Optional)]
-        public AsanaDateTime    DueOn               { get; set; }
+        [AsanaDataAttribute("due_on", SerializationFlags.Omit)]
+        public AsanaDateTime DueOn
+        {
+            get => _dueOn;
+            set
+            {
+                _dueOn = value;
+            }
+        }
+
+        [AsanaDataAttribute("due_at", SerializationFlags.Optional)]
+        public AsanaDateTime DueAt
+        {
+            get => _dueAt;
+            set
+            {
+                if (value < StartAt && StartAt != null)
+                {
+                    _dueAt = StartAt.DateTime.Add(TimeSpan.FromMinutes(1));
+                    return;
+                }
+
+                _dueAt = value;
+            }
+        }
+
+
+        [AsanaDataAttribute("start_on", SerializationFlags.Omit)]
+        public AsanaDateTime StartOn { get; set; }
+
+        [AsanaDataAttribute("start_at", SerializationFlags.Optional)]
+        public AsanaDateTime StartAt
+        {
+            get => _startAt;
+            set
+            {
+                if (value > DueAt && DueAt != null)
+                {
+                    _startAt = DueAt.DateTime.Subtract(TimeSpan.FromMinutes(1));
+                    return;
+                }
+
+                _startAt = value;
+            }
+        }
+
+        [AsanaDataAttribute("dependents", SerializationFlags.Optional)]
+        public AsanaDependent[] Dependents { get; private set; }
+
+        [AsanaDataAttribute("dependencies", SerializationFlags.Optional)]
+        public AsanaDependent[] Dependencies { get; private set; }
+
 
         [AsanaDataAttribute     ("followers",       SerializationFlags.Optional)]
         public AsanaUser[]      Followers           { get; private set; }
@@ -81,6 +136,11 @@ namespace AsanaNet
         {
             ID = id;
             Workspace = workspace;
+        }
+
+        public new static Dictionary<string, object> SerializePropertiesToArgs()
+        {
+            return Parsing.SerializePropertiesToArgs(new AsanaTask());
         }
 
         public Task AddProject(AsanaProject proj, Asana host)

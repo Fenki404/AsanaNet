@@ -110,6 +110,11 @@ namespace AsanaNet
             return ID.ToString();
         }
 
+        public static Dictionary<string, object> SerializePropertiesToArgs()
+        {
+            return new Dictionary<string, object>();
+        }
+
         public static bool operator ==(AsanaObject a, Int64 id)
         {
             return a.ID == id;
@@ -213,6 +218,14 @@ namespace AsanaNet
             if (obj.Host == null)
                 throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
             return obj.Host.Save(obj, null);
+        }
+        public static Task SaveAsync(this AsanaObject obj)
+        {
+            var t = obj.GetType();
+
+            if (obj.Host == null)
+                throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
+            return obj.Host.SaveAsync(obj, null);
         }
 
         public static Task Delete(this AsanaObject obj, Asana host)

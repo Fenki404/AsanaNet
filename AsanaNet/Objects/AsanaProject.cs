@@ -74,6 +74,11 @@ namespace AsanaNet
             Team = team;
         }
 
+        public new static Dictionary<string, object> SerializePropertiesToArgs()
+        {
+            return Parsing.SerializePropertiesToArgs(new AsanaProject());
+        }
+
         public override async Task RefreshAsync(Asana host = null)
         {
             CheckHost(host);

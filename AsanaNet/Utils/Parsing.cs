@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace AsanaNet
 {
-    static class Parsing
+    public static class Parsing
     {
         /// <summary>
         /// 
@@ -19,7 +19,7 @@ namespace AsanaNet
         {
             if (source.ContainsKey(name))
             {
-                return source[name].ToString();
+                return source[name]?.ToString();
             }
 
             return null;
@@ -120,7 +120,7 @@ namespace AsanaNet
         /// </summary>
         /// <param name="data"></param>
         /// <param name="obj"></param>
-        static internal void Deserialize(Dictionary<string, object> data, AsanaObject obj, Asana host)
+        internal static void Deserialize(Dictionary<string, object> data, AsanaObject obj, Asana host)
         {
             foreach(var p in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
@@ -235,6 +235,44 @@ namespace AsanaNet
 
             return dict;
         }
+
+
+        public static Dictionary<string, object> SerializePropertiesToArgs(AsanaObject obj)
+        {
+            var properties = new List<string>();
+
+            foreach (var p in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                try
+                {
+                    var cas = p.GetCustomAttributes(typeof(AsanaDataAttribute), false);
+                    if (cas.Length == 0)
+                        continue;
+
+                    var ca = cas[0] as AsanaDataAttribute;
+                    if (ca == null || ca.Flags.HasFlag(SerializationFlags.Omit))
+                        continue;
+
+                    bool required = ca.Flags.HasFlag(SerializationFlags.Required);
+
+                    properties.Add(ca.Name);
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            if (properties.Count == 0)
+                return null;
+
+            var requestFields = new Dictionary<string, object>()
+            {
+                {"opt_fields", string.Join(",", properties)}
+            };
+
+            return requestFields;
+        }
+
 
         static internal bool ValidateSerializableValue(ref object value, AsanaDataAttribute ca, PropertyInfo p)
         {

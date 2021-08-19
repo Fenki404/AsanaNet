@@ -28,6 +28,29 @@ namespace AsanaNet
         {
             return Associations[t];
         }
+
+        public void AddArgs(Dictionary<string, object> args)
+        {
+            if (args.Count <= 0) return;
+
+            if (Url.Contains("?"))
+            {
+                Url += "&";
+            }
+            else
+            {
+                Url += "?";
+            }
+
+            foreach (var kv in args)
+            {
+                if (Url.Contains(kv.Key + "="))
+                    throw new ArgumentException($"Argument already exist {kv.Key}");
+
+                Url += kv.Key + "=" + Uri.EscapeUriString(kv.Value.ToString()) + "&";
+            }
+            Url = Url.TrimEnd('&');
+        }
     }
 
     public class AsanaFunctionAssociation

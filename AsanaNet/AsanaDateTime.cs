@@ -25,7 +25,8 @@ namespace AsanaNet
 
         public override string ToString()
         {
-            return DateTime.ToString("yyyy-MM-dd");;
+            return DateTime.ToString("yyyy-MM-ddTHH\\:mm\\:sszzzz");
+            //return DateTime.ToString("yyyy-MM-dd");
         }
 
         public static implicit operator AsanaDateTime(DateTime dt)
@@ -84,6 +85,62 @@ namespace AsanaNet
             }
             return a.DateTime != b.DateTime;
         }
+
+
+
+
+        public static bool operator <(AsanaDateTime a, DateTime b)
+        {
+            if (object.ReferenceEquals(a, null))
+            {
+                return !object.ReferenceEquals(b, null);
+            }
+            if (object.ReferenceEquals(b, null))
+            {
+                return !object.ReferenceEquals(a, null);
+            }
+            return a.DateTime < b;
+        }
+
+        public static bool operator <(AsanaDateTime a, AsanaDateTime b)
+        {
+            if (object.ReferenceEquals(a, null))
+            {
+                return !object.ReferenceEquals(b, null);
+            }
+            if (object.ReferenceEquals(b, null))
+            {
+                return !object.ReferenceEquals(a, null);
+            }
+            return a.DateTime < b.DateTime;
+        }
+
+        public static bool operator >(AsanaDateTime a, DateTime b)
+        {
+            if (object.ReferenceEquals(a, null))
+            {
+                return !object.ReferenceEquals(b, null);
+            }
+            if (object.ReferenceEquals(b, null))
+            {
+                return !object.ReferenceEquals(a, null);
+            }
+            return a.DateTime > b;
+        }
+
+        public static bool operator >(AsanaDateTime a, AsanaDateTime b)
+        {
+            if (object.ReferenceEquals(a, null))
+            {
+                return !object.ReferenceEquals(b, null);
+            }
+            if (object.ReferenceEquals(b, null))
+            {
+                return !object.ReferenceEquals(a, null);
+            }
+            return a.DateTime > b.DateTime;
+        }
+
 
         public override bool Equals(object obj)
         {

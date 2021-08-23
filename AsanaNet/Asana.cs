@@ -9,6 +9,7 @@ using System.Web;
 using System.Threading;
 using System.IO;
 using System.Xml;
+using System.Reflection;
 using System.Threading.Tasks;
 using AsanaNet.Interfaces;
 using AsanaNet.Objects;
@@ -40,7 +41,7 @@ namespace AsanaNet
         /// <summary>
         /// An error callback for the outside world
         /// </summary>
-        private Action<string, string, string> _errorCallback;
+        private Action<string, string, string, object> _errorCallback;
 
         #endregion
 
@@ -70,11 +71,30 @@ namespace AsanaNet
 
         #region Methods
 
+        public Asana(IAsanaOptions config)
+        {
+            _baseUrl = "https://app.asana.com/api/1.0";
+            _errorCallback = config.ErrorCallback;
+
+            AuthType = config.AuthType;
+            if (AuthType == AuthenticationType.OAuth)
+            {
+                OAuthToken = config.ApiKeyOrBearerToken;
+            }
+            else
+            {
+                APIKey = config.ApiKeyOrBearerToken;
+                EncodedAPIKey = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(config.ApiKeyOrBearerToken + ":"));
+            }
+
+            AsanaFunction.InitFunctions();
+        }
+        
         /// <summary>
         /// Creates a new Asana entry point.
         /// </summary>
 		/// <param name="apiKeyOrBearerToken">The API key (for Basic authentication) or Bearer Token (for OAuth authentication) for the account we intend to access</param>
-		public Asana(string apiKeyOrBearerToken, AuthenticationType authType, Action<string, string, string> errorCallback)
+		public Asana(string apiKeyOrBearerToken, AuthenticationType authType, Action<string, string, string, object> errorCallback)
         {   
             _baseUrl = "https://app.asana.com/api/1.0";
             _errorCallback = errorCallback;
@@ -215,10 +235,10 @@ namespace AsanaNet
         /// The callback for response errors
         /// </summary>
         /// <param name="error"></param>
-        internal void ErrorCallback(string requestString, string error, string responseContent)
+        internal void ErrorCallback(string requestString, string error, string responseContent, object response)
         {
             Debug.WriteLine($"error: {error},   request: {requestString}, response: {responseContent}");
-            _errorCallback(requestString, error, responseContent);
+            _errorCallback(requestString, error, responseContent, response);
         }
 
         /// <summary>
@@ -276,7 +296,7 @@ namespace AsanaNet
                 throw new NullReferenceException("All AsanaObjects must implement IAsanaData in order to Save themselves.");
 
             if (data == null)
-                data = Parsing.Serialize(obj, true, !idata.IsObjectLocal);
+                data = Parsing.Serialize(obj, true, !idata.IsObjectLocal, true);
             AsanaRequest request = null;
             AsanaFunctionAssociation afa = AsanaFunction.GetFunctionAssociation(obj.GetType());
 
@@ -293,20 +313,24 @@ namespace AsanaNet
         /// <param name="obj"></param>
         internal Task<T> SaveAsync<T>(T obj, AsanaFunction func, Dictionary<string, object> data = null) where T: AsanaObject
         {
-            IAsanaData idata = obj as IAsanaData;
-            if (idata == null)
+            var o = obj.GetType();
+ 
+            IAsanaData iData = (IAsanaData)obj;
+            if (iData == null)
                 throw new NullReferenceException("All AsanaObjects must implement IAsanaData in order to Save themselves.");
 
             if (data == null)
-                data = Parsing.Serialize(obj, true, !idata.IsObjectLocal);
+                data = Parsing.Serialize(obj, true, !iData.IsObjectLocal, true);
             AsanaRequest request = null;
             AsanaFunctionAssociation afa = AsanaFunction.GetFunctionAssociation(obj.GetType());
 
             if (func == null)
-                func = idata.IsObjectLocal ? afa.Create : afa.Update;
+                func = iData.IsObjectLocal ? afa.Create : afa.Update;
 
             request = GetBaseRequestWithParamsJson(func, data, obj);
-            return request.GoAsync<T>();
+
+            o = obj.GetType();
+            return request.GoAsync<T>(obj);
         }
 
         /// <summary>
@@ -334,6 +358,8 @@ namespace AsanaNet
             request = GetBaseRequest(func, obj);
             return request.Go((o, h) => RepackAndCallback(o, obj), ErrorCallback);
         }
+
+
 
         #endregion
     }

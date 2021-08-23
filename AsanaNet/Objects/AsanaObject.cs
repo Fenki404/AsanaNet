@@ -219,14 +219,14 @@ namespace AsanaNet
                 throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
             return obj.Host.Save(obj, null);
         }
-        public static Task SaveAsync(this AsanaObject obj)
+        public static async Task SaveAsync(this AsanaObject obj)
         {
-            var t = obj.GetType();
-
             if (obj.Host == null)
                 throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
-            return obj.Host.SaveAsync(obj, null);
+            var o = obj.GetType();
+            await obj.Host.SaveAsync(obj, null);
         }
+
 
         public static Task Delete(this AsanaObject obj, Asana host)
         {

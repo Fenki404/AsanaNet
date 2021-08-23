@@ -1,6 +1,7 @@
 ﻿using AsanaNet.Objects;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 /*
 * THIS FILE IS GENERATED! DO NOT EDIT!
@@ -571,7 +572,10 @@ namespace AsanaNet
 		{
 			static internal void InitFunctions()
 			{
-				Functions.Add(Function.GetUsers, new AsanaFunction("/users", "GET"));
+			    if(Functions.Any() || Associations.Any())
+					return;
+
+                Functions.Add(Function.GetUsers, new AsanaFunction("/users", "GET"));
 				Functions.Add(Function.GetMe, new AsanaFunction("/users/me", "GET"));
 				Functions.Add(Function.GetUserById, new AsanaFunction("/users/{0}", "GET"));
 				Functions.Add(Function.GetWorkspaces, new AsanaFunction("/workspaces", "GET"));

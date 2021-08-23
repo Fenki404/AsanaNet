@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -22,7 +23,7 @@ namespace AsanaNet.Sample
             //MonitorProjectChanges(733775454290030, TimeSpan.FromSeconds(5)).Wait();
 
             //GetProjectAsync(1200791760303935).Wait();
-            UpdateTaskAsync(1200791760303943).Wait();
+            UpdateTaskAsync(1200824929472797).Wait();
 
             //Console.ReadLine();
         }
@@ -30,7 +31,7 @@ namespace AsanaNet.Sample
         private static async Task MonitorProjectChanges(long projectId, TimeSpan interval)
         {
             var apiToken = GetApiToken();
-            var asana = new Asana(apiToken, AuthenticationType.Basic, errorCallback);
+            var asana = new Asana(apiToken, AuthenticationType.Basic, ErrorCallback);
             
             //var project = await asana.GetProjectByIdAsync(projectId);
             //var events = await asana.GetEventsInAProjectAsync(project, "8233e364b4a1a439d0ace299e825a47b:2");
@@ -66,7 +67,7 @@ namespace AsanaNet.Sample
             // CONFIGURE YOUR ASANA API TOKEN IN APPSETTINGS.CONFIG FILE
             Console.WriteLine("# Asana - Async Method #");
             var apiToken = GetApiToken();
-            var asana = new Asana(apiToken, AuthenticationType.Basic, errorCallback);
+            var asana = new Asana(apiToken, AuthenticationType.Basic, ErrorCallback);
 
             var me = await asana.GetMeAsync();
             Console.WriteLine("Hello, " + me.Name);
@@ -89,7 +90,7 @@ namespace AsanaNet.Sample
             // CONFIGURE YOUR ASANA API TOKEN IN APPSETTINGS.CONFIG FILE
             Console.WriteLine("# Asana - Async Method #");
             var apiToken = GetApiToken();
-            var asana = new Asana(apiToken, AuthenticationType.Basic, errorCallback);
+            var asana = new Asana(apiToken, AuthenticationType.Basic, ErrorCallback);
 
             var me = await asana.GetMeAsync();
             Console.WriteLine("Hello, " + me.Name);
@@ -97,15 +98,20 @@ namespace AsanaNet.Sample
             var startTime = DateTime.Now;
 
 
-            var task = await asana.GetTaskByIdAsync(id, AsanaTask.SerializePropertiesToArgs());
+            var properties = AsanaTask.SerializePropertiesToArgs();
+            var task = await asana.GetTaskByIdAsync(id, properties);
             Console.WriteLine($"      Task: {task.Name}  {task.StartAt?.DateTime} -> {task.DueAt?.DateTime}");
             task.Notes = "updated Note";
 
             if (task.DueAt != null)
                 task.DueAt.DateTime += TimeSpan.FromMinutes(10);
-            await task.Save();
+            else
+            {
+                task.DueAt = new AsanaDateTime(DateTime.Now);
+            }
+            await task.SaveAsync();
 
-            task = await asana.GetTaskByIdAsync(id, AsanaTask.SerializePropertiesToArgs());
+            task = await asana.GetTaskByIdAsync(id, properties);
             Console.WriteLine($"      Task: {task.Name}  {task.StartAt?.DateTime} -> {task.DueAt?.DateTime}");
 
 
@@ -125,7 +131,7 @@ namespace AsanaNet.Sample
             var startTime = DateTime.Now;
             Console.WriteLine("# Asana - Async Method #");
             var apiToken = GetApiToken();
-            var asana = new Asana(apiToken, AuthenticationType.Basic, errorCallback);
+            var asana = new Asana(apiToken, AuthenticationType.Basic, ErrorCallback);
 
             var me = await asana.GetMeAsync();
             Console.WriteLine("Hello, " + me.Name);
@@ -172,7 +178,7 @@ namespace AsanaNet.Sample
             var startTime = DateTime.Now;
             Console.WriteLine("# Asana - Async Method #");
             var apiToken = GetApiToken();
-            var asana = new Asana(apiToken, AuthenticationType.Basic, errorCallback);
+            var asana = new Asana(apiToken, AuthenticationType.Basic, ErrorCallback);
 
             // Parallel tasks
             var meTask = asana.GetMeAsync();
@@ -257,7 +263,7 @@ namespace AsanaNet.Sample
             var startTime = DateTime.Now;
             Console.WriteLine("# Asana - Task Method #");
             var apiToken = GetApiToken();
-            var asana = new Asana(apiToken, AuthenticationType.Basic, errorCallback);
+            var asana = new Asana(apiToken, AuthenticationType.Basic, ErrorCallback);
 
             asana.GetMe(response =>
             {
@@ -308,8 +314,9 @@ namespace AsanaNet.Sample
             Console.ReadLine();
         }
 
-        private static void errorCallback(string arg1, string arg2, string arg3)
-        {            
+        private static void ErrorCallback(string arg1, string arg2, string arg3, object response)
+        {
+            Debug.WriteLine($"{arg1} {arg2} {arg3}");
         }
         
         private static string GetApiToken()

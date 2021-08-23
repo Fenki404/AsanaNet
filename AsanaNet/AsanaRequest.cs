@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Net;
@@ -58,7 +59,7 @@ namespace AsanaNet
         /// <summary>
         /// The error callback
         /// </summary>
-        private Action<string, string, string> _error;
+        private Action<string, string, string, object> _error;
 
         #endregion
                      
@@ -67,7 +68,7 @@ namespace AsanaNet
         /// <summary>
         /// Begins the request
         /// </summary> <Task>
-        public Task Go(Action<string, WebHeaderCollection> callback, Action<string, string, string> error)
+        public Task Go(Action<string, WebHeaderCollection> callback, Action<string, string, string, object> error)
         {
             _callback = callback;
             _error = error;
@@ -85,7 +86,7 @@ namespace AsanaNet
 
                         if (requestTask.IsFaulted)
                         {
-                            _error(request.Address.AbsoluteUri, requestTask.Exception.InnerException.Message, "");
+                            _error(request.Address.AbsoluteUri, requestTask.Exception?.InnerException?.Message ?? "arg2", requestTask.Exception?.InnerException?.InnerException?.Message ?? "arg3", _request);
                             return;
                         }
                         
@@ -112,15 +113,67 @@ namespace AsanaNet
             stream.Close();
             return output;
         }
-        
+
         #endregion
-        
+
         #region Async/Await communication pattern
-        
+
         /// <summary>
         /// Begins the request
         /// </summary> <Task>
         public async Task<TAsanaObject> GoAsync<TAsanaObject>(bool respectOriginalStructure = false)
+            where TAsanaObject : AsanaObject
+        {
+            if (_throttling)
+                _throttlingWaitHandle.WaitOne();
+
+            using (var response = await GetWebResponseAsync(_request))
+            {
+                if (response.Headers["Retry-After"] != null)
+                {
+                    var retryAfter = response.Headers["Retry-After"];
+                    ThrottleFor(Convert.ToInt32(retryAfter));
+                    return await GoAsync<TAsanaObject>();
+                }
+
+                using (var dataStream = response.GetResponseStream())
+                using (var reader = new StreamReader(dataStream))
+                {
+                    var definition = new
+                    {
+                        data = new object(),
+                        errors = new object()
+                    };
+
+                    var responseFromServer = await reader.ReadToEndAsync();
+                    var responseObject = JsonConvert.DeserializeAnonymousType(responseFromServer, definition);
+
+                    if (responseObject.errors != null)
+                    {
+                        throw new Exception(responseObject.errors?.ToString());
+                    }
+
+
+                    if (respectOriginalStructure)
+                    {
+                        var result = PackOriginalContent<TAsanaObject>(responseFromServer);
+                        return result;
+                    }
+                    else
+                    {
+                        var t = typeof(TAsanaObject);
+                        var result = PackAndSendResponse<TAsanaObject>(responseFromServer);
+                        return result;
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Begins the request
+        /// </summary> <Task>
+        public async Task<TAsanaObject> GoAsync<TAsanaObject>(TAsanaObject obj, bool respectOriginalStructure = false)
             where TAsanaObject : AsanaObject
         {
             if (_throttling)
@@ -132,7 +185,7 @@ namespace AsanaNet
                 {
                     var retryAfter = response.Headers["Retry-After"];
                     ThrottleFor(Convert.ToInt32(retryAfter));
-                    return await GoAsync<TAsanaObject>();
+                    return await GoAsync(obj);
                 }
 
                 using (var dataStream = response.GetResponseStream())
@@ -161,6 +214,14 @@ namespace AsanaNet
                     else
                     {
                         var t = typeof(TAsanaObject);
+                        if (t.IsInstanceOfType(obj))
+                        {
+                            var value = obj.GetType();
+                            Debug.WriteLine(value);
+                            var at = PackAndSendResponse(new AsanaTask(), responseFromServer);
+                            return at as TAsanaObject;
+                        }
+
                         var result = PackAndSendResponse<TAsanaObject>(responseFromServer);
                         return result;
                     }
@@ -228,8 +289,19 @@ namespace AsanaNet
             var u = AsanaObject.Create(typeof(T));
             Parsing.Deserialize(GetDataAsDict(rawData), u, _host);
             return (T) u;
-        }               
-        
+        }
+
+        /// <summary>
+        /// Packs the data and into a response object and sends it to the callback
+        /// </summary>
+        /// <typeparam name="T"></typeparam>        
+        private T PackAndSendResponse<T>(T obj, string rawData) where T : AsanaObject
+        {
+            var u = AsanaObject.Create(typeof(T));
+            Parsing.Deserialize(GetDataAsDict(rawData), obj, _host);
+            return (T)obj;
+        }
+
         /// <summary>
         /// Converts the raw string into dictionary format
         /// </summary>

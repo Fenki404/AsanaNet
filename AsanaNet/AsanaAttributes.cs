@@ -8,9 +8,10 @@ namespace AsanaNet
     [FlagsAttribute]
     public enum SerializationFlags
     {
-        Optional,
-        Required,
-        Omit
+        Optional = 1,
+        Required = 2,
+        Omit = 4,
+        ReadOnly = 8,
     }
 
     [System.AttributeUsage(System.AttributeTargets.Property, AllowMultiple = false)]

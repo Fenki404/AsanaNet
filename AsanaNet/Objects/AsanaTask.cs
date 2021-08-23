@@ -34,13 +34,13 @@ namespace AsanaNet
         [AsanaDataAttribute     ("created_at",      SerializationFlags.Omit)]
         public AsanaDateTime    CreatedAt           { get; private set; }
 
-        [AsanaDataAttribute     ("completed",       SerializationFlags.Omit)]
+        [AsanaDataAttribute     ("completed",       SerializationFlags.Optional)]
         public bool             Completed           { get; set; }
 
         [AsanaDataAttribute     ("completed_at",    SerializationFlags.Omit)]
         public AsanaDateTime    CompletedAt         { get; private set; }
 
-        [AsanaDataAttribute("due_on", SerializationFlags.Omit)]
+        [AsanaDataAttribute("due_on", SerializationFlags.ReadOnly)]
         public AsanaDateTime DueOn
         {
             get => _dueOn;
@@ -53,7 +53,10 @@ namespace AsanaNet
         [AsanaDataAttribute("due_at", SerializationFlags.Optional)]
         public AsanaDateTime DueAt
         {
-            get => _dueAt;
+            get
+            {
+                return _dueAt;
+            }
             set
             {
                 if (value < StartAt && StartAt != null)
@@ -67,13 +70,16 @@ namespace AsanaNet
         }
 
 
-        [AsanaDataAttribute("start_on", SerializationFlags.Omit)]
+        [AsanaDataAttribute("start_on", SerializationFlags.ReadOnly)]
         public AsanaDateTime StartOn { get; set; }
 
         [AsanaDataAttribute("start_at", SerializationFlags.Optional)]
         public AsanaDateTime StartAt
         {
-            get => _startAt;
+            get
+            {
+                return _startAt;
+            }
             set
             {
                 if (value > DueAt && DueAt != null)
@@ -140,7 +146,8 @@ namespace AsanaNet
 
         public new static Dictionary<string, object> SerializePropertiesToArgs()
         {
-            return Parsing.SerializePropertiesToArgs(new AsanaTask());
+            var asanaObject = new AsanaTask();
+            return Parsing.SerializePropertiesToArgs(asanaObject);
         }
 
         public Task AddProject(AsanaProject proj, Asana host)
@@ -202,6 +209,8 @@ namespace AsanaNet
             return RemoveProject(proj, Host);
         }
 
+
+
         public Task AddTag(AsanaTag proj, Asana host)
         {
             Dictionary<string, object> Tag = new Dictionary<string, object>();
@@ -259,6 +268,19 @@ namespace AsanaNet
             if (Host == null)
                 throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
             return RemoveTag(proj, Host);
+        }
+
+        public void SetAtTimes()
+        {
+            if (StartAt == null && StartOn != null)
+                StartAt = StartOn; 
+            if (DueAt == null && DueOn != null)
+                DueAt = DueOn;
+        }
+
+        public bool AtTimesExist()
+        {
+            return StartAt?.DateTime != null && DueAt?.DateTime != null;
         }
     }
 }

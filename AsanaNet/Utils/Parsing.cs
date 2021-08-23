@@ -180,9 +180,11 @@ namespace AsanaNet
         /// <summary>
         /// Deserializes a dictionary based on AsanaDataAttributes
         /// </summary>
-        /// <param name="data"></param>
         /// <param name="obj"></param>
-        static internal Dictionary<string, object> Serialize(AsanaObject obj, bool asString, bool dirtyOnly)
+        /// <param name="asString"></param>
+        /// <param name="dirtyOnly"></param>
+        /// <param name="onWrite"></param>
+        static internal Dictionary<string, object> Serialize(AsanaObject obj, bool asString, bool dirtyOnly, bool onWrite = false)
         {
             var dict = new Dictionary<string, object>();
 
@@ -197,6 +199,8 @@ namespace AsanaNet
                     AsanaDataAttribute ca = cas[0] as AsanaDataAttribute;
 
                     if (ca.Flags.HasFlag(SerializationFlags.Omit))
+                        continue;
+                    if (ca.Flags.HasFlag(SerializationFlags.ReadOnly) && onWrite)
                         continue;
 
                     bool required = ca.Flags.HasFlag(SerializationFlags.Required);
@@ -250,7 +254,8 @@ namespace AsanaNet
                         continue;
 
                     var ca = cas[0] as AsanaDataAttribute;
-                    if (ca == null || ca.Flags.HasFlag(SerializationFlags.Omit))
+                    var omit = ca?.Flags.HasFlag(SerializationFlags.Omit) ?? false;
+                    if (ca == null || omit)
                         continue;
 
                     bool required = ca.Flags.HasFlag(SerializationFlags.Required);

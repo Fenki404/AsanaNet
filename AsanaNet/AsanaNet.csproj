@@ -74,6 +74,7 @@
     <Compile Include="AsanaFunction.cs" />
     <Compile Include="Extensions\HttpWebRequestExtension.cs" />
     <Compile Include="Interfaces\IAsana.cs" />
+    <Compile Include="Interfaces\IAsanaOptions.cs" />
     <Compile Include="Objects\AsanaDependent.cs" />
     <Compile Include="Objects\AsanaDuplicateProjectJob.cs" />
     <Compile Include="Objects\AsanaDuplicateProjectSettings.cs" />

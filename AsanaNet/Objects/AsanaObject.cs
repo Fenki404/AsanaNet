@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Reflection;
@@ -219,12 +220,22 @@ namespace AsanaNet
                 throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
             return obj.Host.Save(obj, null);
         }
-        public static async Task SaveAsync(this AsanaObject obj)
+        public static async Task<T> SaveAsync<T>(this AsanaObject obj, Asana host = null)
         {
-            if (obj.Host == null)
+            if (obj.Host == null && host == null)
                 throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
-            var o = obj.GetType();
-            await obj.Host.SaveAsync(obj, null);
+
+            if (obj.Host == null && host != null)
+            {
+                var response = await host.SaveAsync(obj, null);
+                return (T)Convert.ChangeType(response, typeof(T));
+            }
+            else
+            {
+                var response = await obj.Host.SaveAsync(obj, null);
+                return (T)Convert.ChangeType(response, typeof(T));
+            }
+
         }
 
 
@@ -238,6 +249,26 @@ namespace AsanaNet
             if (obj.Host == null)
                 throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
             return obj.Host.Delete(obj);
+        }
+
+        public static async Task DeleteAsync(this AsanaObject obj, Asana host = null)
+        {
+            if (obj.Host == null && host == null)
+                throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
+
+
+            if (obj.Host == null && host != null)
+            {
+                var response = await host.DeleteAsync(obj);
+                Debug.WriteLine(response);
+                //return (T)Convert.ChangeType(response, typeof(T));
+            }
+            else
+            {
+                var response = await obj.Host.DeleteAsync(obj);
+                Debug.WriteLine(response);
+                //return (T)Convert.ChangeType(response, typeof(T));
+            }
         }
     }
 }

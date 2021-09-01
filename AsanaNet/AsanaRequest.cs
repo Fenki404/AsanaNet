@@ -216,8 +216,6 @@ namespace AsanaNet
                         var t = typeof(TAsanaObject);
                         if (t.IsInstanceOfType(obj))
                         {
-                            var value = obj.GetType();
-                            Debug.WriteLine(value);
                             var at = PackAndSendResponse(new AsanaTask(), responseFromServer);
                             return at as TAsanaObject;
                         }

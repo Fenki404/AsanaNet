@@ -23,7 +23,9 @@ namespace AsanaNet.Sample
             //MonitorProjectChanges(733775454290030, TimeSpan.FromSeconds(5)).Wait();
 
             //GetProjectAsync(1200791760303935).Wait();
-            UpdateTaskAsync(1200824929472797).Wait();
+            //UpdateTaskAsync(1200824929472797).Wait();
+
+            RemoveTask().Wait();
 
             //Console.ReadLine();
         }
@@ -85,6 +87,48 @@ namespace AsanaNet.Sample
             Console.ReadLine();
         }
 
+        private static async Task CreateTask()
+        {
+            // CONFIGURE YOUR ASANA API TOKEN IN APPSETTINGS.CONFIG FILE
+            Console.WriteLine("# Asana - Async Method #");
+            var apiToken = GetApiToken();
+            var asana = new Asana(apiToken, AuthenticationType.Basic, ErrorCallback);
+
+            var me = await asana.GetMeAsync();
+            Console.WriteLine("Hello, " + me.Name);
+
+            var startTime = DateTime.Now;
+            var workSpaces = await asana.GetWorkspacesAsync();
+            var first = workSpaces.First();
+
+            var task = new AsanaTask(first)
+            {
+                Assignee = me, 
+                Name = "Test Task Christian"
+            };
+            var result = await task.SaveAsync<AsanaTask>(asana);
+
+            Debug.WriteLine(result);
+        }
+
+        private static async Task RemoveTask()
+        {
+            // CONFIGURE YOUR ASANA API TOKEN IN APPSETTINGS.CONFIG FILE
+            Console.WriteLine("# Asana - Async Method #");
+            var apiToken = GetApiToken();
+            var asana = new Asana(apiToken, AuthenticationType.Basic, ErrorCallback);
+
+            var me = await asana.GetMeAsync();
+            Console.WriteLine("Hello, " + me.Name);
+
+            var properties = AsanaTask.SerializePropertiesToArgs();
+            var task = await asana.GetTaskByIdAsync(1200844373558126, properties);
+       
+           // await task.DeleteAsync();
+
+            Debug.WriteLine(task);
+        }
+
         private static async Task UpdateTaskAsync(long id)
         {
             // CONFIGURE YOUR ASANA API TOKEN IN APPSETTINGS.CONFIG FILE
@@ -109,7 +153,7 @@ namespace AsanaNet.Sample
             {
                 task.DueAt = new AsanaDateTime(DateTime.Now);
             }
-            await task.SaveAsync();
+            await task.SaveAsync<AsanaTask>();
 
             task = await asana.GetTaskByIdAsync(id, properties);
             Console.WriteLine($"      Task: {task.Name}  {task.StartAt?.DateTime} -> {task.DueAt?.DateTime}");

@@ -69,12 +69,13 @@ namespace AsanaNet
 
 			public Task GetMe(AsanaResponseEventHandler callback)
 			{
-				var request = GetBaseRequest(AsanaFunction.GetFunction(Function.GetMe));
+        
+			    var request = GetBaseRequest(AsanaFunction.GetFunction(Function.GetMe));
 				return request.Go((o, h) => PackAndSendResponse<AsanaUser>(o, callback), ErrorCallback);
 			}
 
             public Task<AsanaUser> GetMeAsync()
-            {
+            { 
                 var request = GetBaseRequest(AsanaFunction.GetFunction(Function.GetMe));
                 return request.GoAsync<AsanaUser>();
             }

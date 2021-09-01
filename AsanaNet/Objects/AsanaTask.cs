@@ -22,23 +22,26 @@ namespace AsanaNet
         private AsanaDateTime _dueOn;
         private AsanaDateTime _startAt;
 
-        [AsanaDataAttribute     ("name",            SerializationFlags.Required)]
-        public string           Name                { get; set; }
+        [AsanaDataAttribute("name", SerializationFlags.Required)]
+        public string Name { get; set; }
 
-        [AsanaDataAttribute     ("assignee",        SerializationFlags.Optional, "ID")]
-        public AsanaUser        Assignee            { get; set; }
+        [AsanaDataAttribute("assignee", SerializationFlags.Optional, "ID")]
+        public AsanaUser Assignee { get; set; }
 
-        [AsanaDataAttribute     ("assignee_status", SerializationFlags.Omit)]
-        public AssigneeStatus   AssigneeStatus      { get; set; }
+        [AsanaDataAttribute("assignee_status", SerializationFlags.Omit)]
+        public AssigneeStatus AssigneeStatus { get; set; }
 
-        [AsanaDataAttribute     ("created_at",      SerializationFlags.Omit)]
-        public AsanaDateTime    CreatedAt           { get; private set; }
+        [AsanaDataAttribute("created_at", SerializationFlags.Omit)]
+        public AsanaDateTime CreatedAt { get; private set; }
 
-        [AsanaDataAttribute     ("completed",       SerializationFlags.Optional)]
-        public bool             Completed           { get; set; }
+        [AsanaDataAttribute("completed", SerializationFlags.Optional)]
+        public bool Completed { get; set; }
 
-        [AsanaDataAttribute     ("completed_at",    SerializationFlags.Omit)]
-        public AsanaDateTime    CompletedAt         { get; private set; }
+        [AsanaDataAttribute("completed_at", SerializationFlags.Omit)]
+        public AsanaDateTime CompletedAt { get; private set; }
+
+        [AsanaDataAttribute("num_subtasks", SerializationFlags.Optional)]
+        public int SubTaskCount { get; set; }
 
         [AsanaDataAttribute("due_on", SerializationFlags.ReadOnly)]
         public AsanaDateTime DueOn
@@ -99,23 +102,27 @@ namespace AsanaNet
         public AsanaDependent[] Dependencies { get; private set; }
 
 
-        [AsanaDataAttribute     ("followers",       SerializationFlags.Optional)]
-        public AsanaUser[]      Followers           { get; private set; }
+        [AsanaDataAttribute("followers", SerializationFlags.Optional)]
+        public AsanaUser[] Followers { get; private set; }
 
-        [AsanaDataAttribute     ("modified_at",     SerializationFlags.Omit)]
-        public AsanaDateTime    ModifiedAt          { get; private set; }
+        [AsanaDataAttribute("modified_at", SerializationFlags.Omit)]
+        public AsanaDateTime ModifiedAt { get; private set; }
 
-        [AsanaDataAttribute     ("notes",           SerializationFlags.Optional)]
-        public string           Notes               { get; set; }
+        [AsanaDataAttribute("notes", SerializationFlags.Optional)]
+        public string Notes { get; set; }
 
-        [AsanaDataAttribute     ("projects",        SerializationFlags.Optional, "ID")]
-        public AsanaProject[]   Projects            { get; private set; }
+        [AsanaDataAttribute("projects", SerializationFlags.Optional, "ID")]
+        public AsanaProject[] Projects { get; private set; }
 
-        [AsanaDataAttribute     ("tags",            SerializationFlags.Optional, "ID")]
-        public AsanaTag[]       Tags                { get; private set; }
+        [AsanaDataAttribute("tags", SerializationFlags.Optional, "ID")]
+        public AsanaTag[] Tags { get; private set; }
 
-        [AsanaDataAttribute     ("workspace",       SerializationFlags.Required, "ID")]
-        public AsanaWorkspace   Workspace           { get; private set; }
+        [AsanaDataAttribute("workspace", SerializationFlags.Required, "ID")]
+        public AsanaWorkspace Workspace { get; private set; }
+
+
+        [AsanaDataAttribute("custom_fields", SerializationFlags.Optional)]
+        public AsanaCustomField[] CustomFields { get; set; }
 
         // ------------------------------------------------------
 
@@ -130,15 +137,15 @@ namespace AsanaNet
 
         internal AsanaTask()
         {
-            
+
         }
 
-        public AsanaTask(AsanaWorkspace workspace) 
+        public AsanaTask(AsanaWorkspace workspace)
         {
             Workspace = workspace;
         }
 
-        public AsanaTask(AsanaWorkspace workspace, Int64 id = 0) 
+        public AsanaTask(AsanaWorkspace workspace, Int64 id = 0)
         {
             ID = id;
             Workspace = workspace;
@@ -191,9 +198,9 @@ namespace AsanaNet
                 // add it manually
                 int index = Array.IndexOf(Projects, proj);
                 AsanaProject[] lProjects = new AsanaProject[Projects.Length - 1];
-                if(index != 0)
+                if (index != 0)
                     Array.Copy(Projects, lProjects, index);
-                Array.Copy(Projects, index+1, lProjects, index, lProjects.Length - index);
+                Array.Copy(Projects, index + 1, lProjects, index, lProjects.Length - index);
 
                 Projects = lProjects;
                 Saving -= savedCallback;
@@ -273,7 +280,7 @@ namespace AsanaNet
         public void SetAtTimes()
         {
             if (StartAt == null && StartOn != null)
-                StartAt = StartOn; 
+                StartAt = StartOn;
             if (DueAt == null && DueOn != null)
                 DueAt = DueOn;
         }

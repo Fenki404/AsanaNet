@@ -72,6 +72,7 @@
     <Compile Include="AsanaAttributes.cs" />
     <Compile Include="AsanaDateTime.cs" />
     <Compile Include="AsanaFunction.cs" />
+    <Compile Include="Extensions\ClassExtensions.cs" />
     <Compile Include="Extensions\HttpWebRequestExtension.cs" />
     <Compile Include="Interfaces\IAsana.cs" />
     <Compile Include="Interfaces\IAsanaOptions.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="Objects\AsanaProject.cs" />
     <Compile Include="Objects\AsanaReference.cs" />
     <Compile Include="Objects\AsanaScheduleDates.cs" />
+    <Compile Include="Objects\AsanaSection.cs" />
     <Compile Include="Objects\AsanaStory.cs" />
     <Compile Include="Objects\AsanaTag.cs" />
     <Compile Include="Objects\AsanaTask.cs" />
@@ -95,6 +97,8 @@
     <Compile Include="Objects\AsanaTeam.cs" />
     <Compile Include="Objects\DynamicDictionary.cs" />
     <Compile Include="Objects\EnumValue.cs" />
+    <Compile Include="Objects\PageOffset.cs" />
+    <Compile Include="Objects\ResourceType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="T4\AsanaFunctions.cs">
       <AutoGen>True</AutoGen>

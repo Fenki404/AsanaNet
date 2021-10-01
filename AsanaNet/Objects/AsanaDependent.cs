@@ -13,9 +13,10 @@ namespace AsanaNet.Objects
         {
 
         }
-        public AsanaDependent(long id)
+        public AsanaDependent(long id, string type = null)
         {
             ID = id;
+            ResourceType = type;
         }
 
         public bool IsObjectLocal { get { return ID == 0; } }

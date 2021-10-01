@@ -16,9 +16,10 @@ namespace AsanaNet.Objects
         {
 
         }
-        public AsanaReference(long id)
+        public AsanaReference(long id, string resourceType)
         {
             ID = id;
+            ResourceType = resourceType;
         }
 
         public bool IsObjectLocal { get { return ID == 0; } }

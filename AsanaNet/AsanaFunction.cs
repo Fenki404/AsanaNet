@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -17,10 +18,21 @@ namespace AsanaNet
         {
             Url = url;
             Method = methd;
-        }        
+        }
 
         static public AsanaFunction GetFunction(Function en)
         {
+            if (!Functions.ContainsKey(en))
+            {
+                var str = "";
+                foreach (var keyValuePair in Functions)
+                {
+                    str += keyValuePair.Key.ToString();
+                }
+
+                throw new NotImplementedException($"GetFunction: key {en} not found, all:" + str);
+            }
+
             return Functions[en];
         }
 

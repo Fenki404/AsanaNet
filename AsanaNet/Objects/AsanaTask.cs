@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AsanaNet.Extensions;
 using AsanaNet.Objects;
 
 namespace AsanaNet
@@ -16,11 +17,174 @@ namespace AsanaNet
     }
 
     [Serializable]
-    public class AsanaTask : AsanaObject, IAsanaData
+    public class AsanaTask : BaseAsanaTask
+    {
+        [AsanaDataAttribute("parent", SerializationFlags.Optional)]
+        public AsanaReference Parent { get; set; }
+
+        public AsanaTask()
+        {
+
+        }
+
+        public AsanaTask(AsanaWorkspace workspace) : base(workspace)
+        {
+        }
+
+        public AsanaTask(AsanaWorkspace workspace, long id = 0) : base(workspace, id)
+        {
+        }
+
+
+        public Task<AsanaTask> AddProjectAsync(AsanaProject proj, Asana host, long after = 0, long before = 0, long section = 0)
+        {
+            Dictionary<string, object> project = new Dictionary<string, object>();
+
+            project.Add("project", proj.ID.ToString());
+
+            if (after > 0)
+                project.Add("insert_after", after.ToString());
+            if (before > 0)
+                project.Add("insert_before", before.ToString());
+            if (section > 0)
+                project.Add("section", section.ToString());
+
+            // add it manually
+            if (Projects == null)
+                Projects = new AsanaProject[1];
+            else
+            {
+                AsanaProject[] lProjects = Projects;
+                Array.Resize(ref lProjects, Projects.Length + 1);
+                Projects = lProjects;
+            }
+            Projects[Projects.Length - 1] = proj;
+
+            return host.SaveAsync(this, AsanaFunction.GetFunction(Function.AddProjectToTask), project);
+        }
+
+        public Task<AsanaTask> AddProjectAsync(AsanaProject proj, long after = 0, long before = 0, long section = 0)
+        {
+            if (Host == null)
+                throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
+            return AddProjectAsync(proj, Host, after, before, section);
+        }
+
+
+
+        public Task<AsanaTask> AddSubTaskAsync(AsanaTask task)
+        {
+            if (Host == null)
+                throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
+            return AddSubTaskAsync(task, Host);
+        }
+        public Task<AsanaTask> AddSubTaskAsync(AsanaTask task, Asana host)
+        {
+            var notes = string.IsNullOrWhiteSpace(task.Notes) ? string.Empty : task.Notes;
+            var data = new Dictionary<string, object>
+            {
+                {"name", task.Name},
+                {"notes", notes},
+                {"start_at", task.StartAt},
+                {"due_at", task.DueAt}
+            };
+
+            return host.SaveAsync(this, AsanaFunction.GetFunction(Function.AddSubTaskToTask), data);
+        }
+    }
+
+
+    [Serializable]
+    public class SaveAsanaTask : BaseAsanaTask
+    {
+        [AsanaDataAttribute("parent", SerializationFlags.Optional)]
+        public string Parent { get; set; }
+
+
+        public SaveAsanaTask()
+        {
+
+        }
+
+        public SaveAsanaTask(AsanaWorkspace workspace)
+        {
+            Workspace = workspace;
+        }
+
+        public SaveAsanaTask(AsanaWorkspace workspace, Int64 id = 0)
+        {
+            ID = id;
+            Workspace = workspace;
+        }
+
+
+        public Task<SaveAsanaTask> AddProjectAsync(AsanaProject proj, Asana host, long after = 0, long before = 0, long section = 0)
+        {
+            Dictionary<string, object> project = new Dictionary<string, object>();
+
+            project.Add("project", proj.ID.ToString());
+
+            if (after > 0)
+                project.Add("insert_after", after.ToString());
+            if (before > 0)
+                project.Add("insert_before", before.ToString());
+            if (section > 0)
+                project.Add("section", section.ToString());
+
+            // add it manually
+            if (Projects == null)
+                Projects = new AsanaProject[1];
+            else
+            {
+                AsanaProject[] lProjects = Projects;
+                Array.Resize(ref lProjects, Projects.Length + 1);
+                Projects = lProjects;
+            }
+            Projects[Projects.Length - 1] = proj;
+
+            return host.SaveAsync(this, AsanaFunction.GetFunction(Function.AddProjectToTask), project);
+        }
+
+        public Task<SaveAsanaTask> AddProjectAsync(AsanaProject proj, long after = 0, long before = 0, long section = 0)
+        {
+            if (Host == null)
+                throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
+            return AddProjectAsync(proj, Host, after, before, section);
+        }
+
+
+
+        public Task<SaveAsanaTask> AddSubTaskAsync(SaveAsanaTask task)
+        {
+            if (Host == null)
+                throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
+            return AddSubTaskAsync(task, Host);
+        }
+        public Task<SaveAsanaTask> AddSubTaskAsync(SaveAsanaTask task, Asana host)
+        {
+            var notes = string.IsNullOrWhiteSpace(task.Notes) ? string.Empty : task.Notes;
+            var data = new Dictionary<string, object>
+            {
+                {"name", task.Name},
+                {"notes", notes},
+                {"start_at", task.StartAt},
+                {"due_at", task.DueAt}
+            };
+
+            return host.SaveAsync(this, AsanaFunction.GetFunction(Function.AddSubTaskToTask), data);
+        }
+    }
+
+
+    [Serializable]
+    public class BaseAsanaTask : AsanaObject, IAsanaData
     {
         private AsanaDateTime _dueAt;
         private AsanaDateTime _dueOn;
         private AsanaDateTime _startAt;
+
+        //[AsanaDataAttribute("resource_type", SerializationFlags.Required)]
+        //public string ResourceType => AsanaNet.Objects.ResourceType.Project;
 
         [AsanaDataAttribute("name", SerializationFlags.Required)]
         public string Name { get; set; }
@@ -32,13 +196,13 @@ namespace AsanaNet
         public AssigneeStatus AssigneeStatus { get; set; }
 
         [AsanaDataAttribute("created_at", SerializationFlags.Omit)]
-        public AsanaDateTime CreatedAt { get; private set; }
+        public AsanaDateTime CreatedAt { get; protected set; }
 
         [AsanaDataAttribute("completed", SerializationFlags.Optional)]
         public bool Completed { get; set; }
 
         [AsanaDataAttribute("completed_at", SerializationFlags.Omit)]
-        public AsanaDateTime CompletedAt { get; private set; }
+        public AsanaDateTime CompletedAt { get; protected set; }
 
         [AsanaDataAttribute("num_subtasks", SerializationFlags.Optional)]
         public int SubTaskCount { get; set; }
@@ -96,29 +260,32 @@ namespace AsanaNet
         }
 
         [AsanaDataAttribute("dependents", SerializationFlags.Optional)]
-        public AsanaDependent[] Dependents { get; private set; }
+        public AsanaDependent[] Dependents { get; protected set; }
 
         [AsanaDataAttribute("dependencies", SerializationFlags.Optional)]
-        public AsanaDependent[] Dependencies { get; private set; }
+        public AsanaDependent[] Dependencies { get; protected set; }
 
 
         [AsanaDataAttribute("followers", SerializationFlags.Optional)]
-        public AsanaUser[] Followers { get; private set; }
+        public AsanaUser[] Followers { get; protected set; }
 
         [AsanaDataAttribute("modified_at", SerializationFlags.Omit)]
-        public AsanaDateTime ModifiedAt { get; private set; }
+        public AsanaDateTime ModifiedAt { get; protected set; }
 
         [AsanaDataAttribute("notes", SerializationFlags.Optional)]
         public string Notes { get; set; }
 
+        //[AsanaDataAttribute("parent", SerializationFlags.Optional)]
+        //public AsanaReference Parent { get; set; }
+
         [AsanaDataAttribute("projects", SerializationFlags.Optional, "ID")]
-        public AsanaProject[] Projects { get; private set; }
+        public AsanaProject[] Projects { get; set; }
 
         [AsanaDataAttribute("tags", SerializationFlags.Optional, "ID")]
-        public AsanaTag[] Tags { get; private set; }
+        public AsanaTag[] Tags { get; protected set; }
 
         [AsanaDataAttribute("workspace", SerializationFlags.Required, "ID")]
-        public AsanaWorkspace Workspace { get; private set; }
+        public AsanaWorkspace Workspace { get; protected set; }
 
 
         [AsanaDataAttribute("custom_fields", SerializationFlags.Optional)]
@@ -126,7 +293,7 @@ namespace AsanaNet
 
         // ------------------------------------------------------
 
-        public bool IsObjectLocal { get { return ID == 0; } }
+        public bool IsObjectLocal => ID == 0;
 
         public void Complete()
         {
@@ -135,17 +302,17 @@ namespace AsanaNet
 
         // ------------------------------------------------------
 
-        internal AsanaTask()
+        internal BaseAsanaTask()
         {
 
         }
 
-        public AsanaTask(AsanaWorkspace workspace)
+        public BaseAsanaTask(AsanaWorkspace workspace)
         {
             Workspace = workspace;
         }
 
-        public AsanaTask(AsanaWorkspace workspace, Int64 id = 0)
+        public BaseAsanaTask(AsanaWorkspace workspace, long id = 0)
         {
             ID = id;
             Workspace = workspace;
@@ -153,9 +320,20 @@ namespace AsanaNet
 
         public new static Dictionary<string, object> SerializePropertiesToArgs()
         {
-            var asanaObject = new AsanaTask();
+            var asanaObject = new BaseAsanaTask();
             return Parsing.SerializePropertiesToArgs(asanaObject);
         }
+
+
+        public void SetWorkspace(AsanaWorkspace workspace)
+        {
+            Workspace = workspace;
+            foreach (var asanaProject in Projects)
+            {
+                asanaProject.SetWorkspace(workspace);
+            }
+        }
+
 
         public Task AddProject(AsanaProject proj, Asana host)
         {
@@ -187,6 +365,10 @@ namespace AsanaNet
                 throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
             return AddProject(proj, Host);
         }
+
+
+
+
 
         public Task RemoveProject(AsanaProject proj, Asana host)
         {
@@ -275,6 +457,11 @@ namespace AsanaNet
             if (Host == null)
                 throw new NullReferenceException("This AsanaObject does not have a host associated with it so you must specify one when saving.");
             return RemoveTag(proj, Host);
+        }
+
+        public string GetCustomFieldColor()
+        {
+            return CustomFields?.FirstOrDefault(x => x.Name == "Color")?.EnumValue?.Color;
         }
 
         public void SetAtTimes()

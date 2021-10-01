@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Reflection;
@@ -42,7 +43,7 @@ namespace AsanaNet
         internal bool IsDirty(string key, object value)
         {
             object lvalue = null;
-            if(_lastSave != null && _lastSave.TryGetValue(key, out lvalue))
+            if (_lastSave != null && _lastSave.TryGetValue(key, out lvalue))
             {
                 return !value.Equals(lvalue);
             }
@@ -62,8 +63,8 @@ namespace AsanaNet
         {
             if (Saved != null)
                 Saved(this);
-        }   
-     
+        }
+
         /// <summary>
         /// Creates a new T without requiring a public constructor
         /// </summary>
@@ -99,7 +100,7 @@ namespace AsanaNet
         /// </summary>
         internal AsanaObject()
         {
-            
+
         }
 
         /// <summary>
@@ -156,7 +157,7 @@ namespace AsanaNet
         }
 
         protected internal void CheckHost(Asana host)
-        {            
+        {
             if ((host ?? Host) == null)
                 throw new NullReferenceException("Host not set to remote data update.");
         }
@@ -167,18 +168,18 @@ namespace AsanaNet
     }
 
     public interface IAsanaObjectCollection<T> : IAsanaObjectCollection, IList<T> where T : AsanaObject
-    {        
+    {
     }
-     
+
     [Serializable]
     public class AsanaObjectCollection<T> : List<T>, IAsanaObjectCollection<T> where T : AsanaObject
     {
     }
-    
+
     [Serializable]
     public class AsanaObjectCollection : AsanaObjectCollection<AsanaObject>
     {
-    }       
+    }
 
     public static class AsanaObjectCollectionExtensions
     {
@@ -228,12 +229,12 @@ namespace AsanaNet
             if (obj.Host == null && host != null)
             {
                 var response = await host.SaveAsync(obj, null);
-                return (T)Convert.ChangeType(response, typeof(T));
+                return (T)Convert.ChangeType(response, typeof(T), CultureInfo.InvariantCulture);
             }
             else
             {
                 var response = await obj.Host.SaveAsync(obj, null);
-                return (T)Convert.ChangeType(response, typeof(T));
+                return (T)Convert.ChangeType(response, typeof(T), CultureInfo.InvariantCulture);
             }
 
         }

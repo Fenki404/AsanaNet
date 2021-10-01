@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using System.Threading.Tasks;
+using AsanaNet.Objects;
 
 namespace AsanaNet
 {
@@ -37,6 +38,19 @@ namespace AsanaNet
         [AsanaDataAttribute("color", SerializationFlags.Omit)] //
         public string Color { get; private set; }
 
+
+
+        [AsanaDataAttribute("start_on", SerializationFlags.Optional)]
+        public AsanaDateTime StartOn { get; set; }
+        [AsanaDataAttribute("due_on", SerializationFlags.Optional)]
+        public AsanaDateTime DueOn { get; set; }
+
+
+
+
+        [AsanaDataAttribute("custom_fields", SerializationFlags.Optional)]
+        public AsanaCustomField[] CustomFields { get; set; }
+
         // ------------------------------------------------------
 
         //public bool IsObjectLocal { get { return true; } }
@@ -56,22 +70,28 @@ namespace AsanaNet
             return Create(typeof(AsanaProject), ID) as AsanaProject;
         }
 
-        public AsanaProject(Int64 id = 0)
+        public AsanaProject(Int64 id)
         {
             ID = id;
         }
 
-        public AsanaProject(AsanaWorkspace workspace, Int64 id = 0) 
+        public AsanaProject(AsanaWorkspace workspace, long id)
         {
-            ID = id;
             Workspace = workspace;
+            ID = id;
         }
 
-        public AsanaProject(AsanaWorkspace workspace, AsanaTeam team, Int64 id = 0)
+        public AsanaProject(AsanaWorkspace workspace, AsanaTeam team, long id = 0)
         {
             ID = id;
             Workspace = workspace;
             Team = team;
+        }
+
+
+        public void SetWorkspace(AsanaWorkspace workspace)
+        {
+            Workspace = workspace;
         }
 
         public new static Dictionary<string, object> SerializePropertiesToArgs()

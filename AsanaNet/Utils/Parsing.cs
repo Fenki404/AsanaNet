@@ -35,13 +35,13 @@ namespace AsanaNet
         static private T SafeAssign<T>(Dictionary<string, object> source, string name, Asana host)
         {
             TypeConverter converter = TypeDescriptor.GetConverter(typeof(T));
-            T value = default(T);  
+            T value = default(T);
 
             if (source.ContainsKey(name) && source[name] != null)
-            {   
+            {
                 if (converter.CanConvertFrom(typeof(string)) && !string.IsNullOrWhiteSpace(source[name].ToString()))
                 {
-                    value =  (T)converter.ConvertFromString(source[name].ToString());
+                    value = (T)converter.ConvertFromString(source[name].ToString());
                 }
             }
 
@@ -122,7 +122,10 @@ namespace AsanaNet
         /// <param name="obj"></param>
         internal static void Deserialize(Dictionary<string, object> data, AsanaObject obj, Asana host)
         {
-            foreach(var p in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            if (obj == null)
+                return;
+
+            foreach (var p in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (p.Name == "Host")
                 {
@@ -139,7 +142,7 @@ namespace AsanaNet
 
                     AsanaDataAttribute ca = cas[0] as AsanaDataAttribute;
 
-                    if(!data.ContainsKey(ca.Name))
+                    if (!data.ContainsKey(ca.Name))
                         continue;
 
                     if (p.PropertyType == typeof(string))
@@ -160,7 +163,7 @@ namespace AsanaNet
                         // this check handle base-class properties
                         if (p.DeclaringType != obj.GetType())
                         {
-                             var p2 = p.DeclaringType.GetProperty(p.Name);
+                            var p2 = p.DeclaringType.GetProperty(p.Name);
                             p2.SetValue(obj, methodResult, null);
                         }
                         else
@@ -169,8 +172,8 @@ namespace AsanaNet
                         }
                     }
                 }
-                catch(Exception)
-                { 
+                catch (Exception)
+                {
                 }
             }
         }
@@ -188,49 +191,64 @@ namespace AsanaNet
         {
             var dict = new Dictionary<string, object>();
 
-            foreach (var p in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var property in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 try
                 {
-                    var cas = p.GetCustomAttributes(typeof(AsanaDataAttribute), false);
-                    if (cas.Length == 0)
+                    var customAttributes = property.GetCustomAttributes(typeof(AsanaDataAttribute), false);
+                    if (customAttributes.Length == 0)
                         continue;
 
-                    AsanaDataAttribute ca = cas[0] as AsanaDataAttribute;
+                    var dataAttribute = customAttributes[0] as AsanaDataAttribute;
 
-                    if (ca.Flags.HasFlag(SerializationFlags.Omit))
+                    if (dataAttribute.Flags.HasFlag(SerializationFlags.Omit))
                         continue;
-                    if (ca.Flags.HasFlag(SerializationFlags.ReadOnly) && onWrite)
+                    if (dataAttribute.Flags.HasFlag(SerializationFlags.ReadOnly) && onWrite)
                         continue;
 
-                    bool required = ca.Flags.HasFlag(SerializationFlags.Required);
+                    bool required = dataAttribute.Flags.HasFlag(SerializationFlags.Required);
+                    bool writeField = dataAttribute.Flags.HasFlag(SerializationFlags.WriteField);
 
-                    object value = p.GetValue(obj, new object[] { });
 
-                    if (dirtyOnly && !obj.IsDirty(ca.Name, value))
-                        continue; 
+                    object value = property.GetValue(obj, new object[] { });
 
-                    bool present = ValidateSerializableValue(ref value, ca, p);
+                    if (dirtyOnly && !obj.IsDirty(dataAttribute.Name, value))
+                        continue;
+
+                    bool present = ValidateSerializableValue(ref value, dataAttribute, property);
 
                     if (present == false)
                         if (!required)
                             continue;
                         else
-                            throw new MissingFieldException("Couldn't save object because it was missing a required field: " + p.Name);
+                            throw new MissingFieldException("Couldn't save object because it was missing a required field: " + property.Name);
+
+
+                    if (writeField && dataAttribute.Fields.Length == 1)
+                    {
+                        var pInternal = value.GetType().GetProperty(dataAttribute.Fields[0]);
+                        if (pInternal != null)
+                        {
+                            var internalValue = pInternal.GetValue(value, new object[] { });
+                            dict.Add(dataAttribute.Name, asString ? internalValue.ToString() : internalValue);
+                            continue;
+                        }
+                    }
 
                     if (value.GetType().IsArray)
                     {
                         int count = 0;
                         foreach (var x in (object[])value)
                         {
-                            dict.Add(ca.Name + "[" + count + "]", asString ? x.ToString() : x);
+
+                            dict.Add(dataAttribute.Name + "[" + count + "]", asString ? x.ToString() : x);
                             count++;
                         }
                     }
                     else
                     {
-                        dict.Add(ca.Name, asString ? value.ToString() : value);
-                    }                    
+                        dict.Add(dataAttribute.Name, asString ? value.ToString() : value);
+                    }
                 }
                 catch (Exception)
                 {
@@ -295,7 +313,7 @@ namespace AsanaNet
             }
             else if (value.GetType() == typeof(DateTime))
             {
-                if((DateTime)value == new DateTime())
+                if ((DateTime)value == new DateTime())
                     present = false;
             }
             else if (value != null && value is AsanaObject)

@@ -27,6 +27,8 @@ namespace AsanaNet.Interfaces
         /// </summary>
         string OAuthToken { get; set; }
 
+        Asana GetHost();
+
         Task GetUsers(AsanaCollectionResponseEventHandler callback);
         Task<IAsanaObjectCollection<AsanaUser>> GetUsersAsync();
         Task GetMe(AsanaResponseEventHandler callback);
@@ -47,6 +49,14 @@ namespace AsanaNet.Interfaces
         Task<IAsanaObjectCollection<AsanaTag>> GetTagsInWorkspaceAsync(AsanaWorkspace asanaWorkspace, Dictionary<string, object> args = null);
         Task GetTaskById(Int64 int64, AsanaResponseEventHandler callback);
         Task<AsanaTask> GetTaskByIdAsync(Int64 int64, Dictionary<string, object> args = null);
+
+        Task<IAsanaObjectCollection<AsanaTask>> GetTasksInASectionAsync(AsanaSection section,
+            Dictionary<string, object> args = null);
+        Task<AsanaSection> CreateSectionInAProjectAsync(long projectId, Dictionary<string, object> args = null);
+        Task<AsanaSection> GetSectionByIdAsync(long id, Dictionary<string, object> args = null);
+        Task<IAsanaObjectCollection<AsanaSection>> GetSectionsInAProjectAsync(AsanaWorkspace asanaWorkspace,
+            Dictionary<string, object> args = null);
+
         Task GetStoriesInTask(AsanaTask asanaTask, AsanaCollectionResponseEventHandler callback);
         Task<IAsanaObjectCollection<AsanaStory>> GetStoriesInTaskAsync(AsanaTask asanaTask);
         Task GetProjectsOnATask(AsanaTask asanaTask, AsanaCollectionResponseEventHandler callback);
@@ -62,6 +72,13 @@ namespace AsanaNet.Interfaces
         Task<AsanaProject> GetProjectByIdAsync(Int64 int64, Dictionary<string, object> args = null);
         Task GetTasksInAProject(AsanaProject asanaProject, AsanaCollectionResponseEventHandler callback);
         Task<IAsanaObjectCollection<AsanaTask>> GetTasksInAProjectAsync(AsanaProject asanaProject, Dictionary<string, object> args = null);
+
+        Task<IAsanaObjectCollection<AsanaTask>> GetSubTasksInATaskAsync(AsanaTask asanaTask,
+            Dictionary<string, object> args = null);
+
+        Task<IAsanaObjectCollection<AsanaTask>> GetDependenciesTasksAsync(AsanaTask asanaTask,
+            Dictionary<string, object> args = null);
+
         Task GetTagById(Int64 int64, AsanaResponseEventHandler callback);
         Task<AsanaTag> GetTagByIdAsync(Int64 int64, Dictionary<string, object> args = null);
         Task GetTeamsInWorkspace(AsanaWorkspace asanaWorkspace, AsanaCollectionResponseEventHandler callback);
@@ -77,12 +94,12 @@ namespace AsanaNet.Interfaces
         Task Get<AsanaT>(AsanaResponseEventHandler callback) where AsanaT : AsanaObject;
         Task Get<AsanaT>(Int64 arg1, AsanaResponseEventHandler callback) where AsanaT : AsanaObject;
         Task Get<AsanaT>(AsanaWorkspace arg1, AsanaCollectionResponseEventHandler callback) where AsanaT : AsanaObject;
-        Task Get<AsanaT>(AsanaWorkspace arg1,  AsanaUser arg2, AsanaCollectionResponseEventHandler callback) where AsanaT : AsanaObject;
+        Task Get<AsanaT>(AsanaWorkspace arg1, AsanaUser arg2, AsanaCollectionResponseEventHandler callback) where AsanaT : AsanaObject;
         Task Get<AsanaT>(AsanaTask arg1, AsanaCollectionResponseEventHandler callback) where AsanaT : AsanaObject;
         Task Get<AsanaT>(AsanaTag arg1, AsanaCollectionResponseEventHandler callback) where AsanaT : AsanaObject;
         Task Get<AsanaT>(AsanaProject arg1, AsanaCollectionResponseEventHandler callback) where AsanaT : AsanaObject;
         Task Get<AsanaT>(AsanaTeam arg1, AsanaCollectionResponseEventHandler callback) where AsanaT : AsanaObject;
-        Task Get<AsanaT>(AsanaProject arg1,  String arg2, AsanaResponseEventHandler callback) where AsanaT : AsanaObject;
-        Task Get<AsanaT>(AsanaTask arg1,  String arg2, AsanaResponseEventHandler callback) where AsanaT : AsanaObject;
+        Task Get<AsanaT>(AsanaProject arg1, String arg2, AsanaResponseEventHandler callback) where AsanaT : AsanaObject;
+        Task Get<AsanaT>(AsanaTask arg1, String arg2, AsanaResponseEventHandler callback) where AsanaT : AsanaObject;
     }
 }

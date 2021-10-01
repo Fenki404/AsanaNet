@@ -10,6 +10,7 @@ using System.Threading;
 using System.IO;
 using System.Xml;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using AsanaNet.Interfaces;
 using AsanaNet.Objects;
@@ -21,15 +22,15 @@ namespace AsanaNet
     public delegate void AsanaResponseEventHandler(AsanaObject response);
     public delegate void AsanaCollectionResponseEventHandler(IAsanaObjectCollection response);
 
-	public enum AuthenticationType
-	{
-		Basic,
-		OAuth
-	}
+    public enum AuthenticationType
+    {
+        Basic,
+        OAuth
+    }
 
     [Serializable]
     public partial class Asana : IAsana
-    {        
+    {
         #region Variables
 
         /// <summary>
@@ -47,10 +48,10 @@ namespace AsanaNet
 
         #region Properties
 
-		/// <summary>
-		/// The Authentication Type used for API access
-		/// </summary>
-		public AuthenticationType AuthType { get; private set; }
+        /// <summary>
+        /// The Authentication Type used for API access
+        /// </summary>
+        public AuthenticationType AuthType { get; private set; }
 
         /// <summary>
         /// The API Key assigned object
@@ -62,10 +63,17 @@ namespace AsanaNet
         /// </summary>
         public string EncodedAPIKey { get; private set; }
 
-		/// <summary>
-		/// The OAuth Bearer Token assigned object
-		/// </summary>
-		public string OAuthToken { get; set; }
+        /// <summary>
+        /// The OAuth Bearer Token assigned object
+        /// </summary>
+        public string OAuthToken { get; set; }
+
+        public int GoCollectionMaxRecursiveCount { get; set; }
+
+        public Asana GetHost()
+        {
+            return this;
+        }
 
         #endregion        
 
@@ -87,25 +95,30 @@ namespace AsanaNet
                 EncodedAPIKey = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(config.ApiKeyOrBearerToken + ":"));
             }
 
+            GoCollectionMaxRecursiveCount = config.GoCollectionMaxRecursiveCount;
+
             AsanaFunction.InitFunctions();
         }
-        
+
         /// <summary>
         /// Creates a new Asana entry point.
         /// </summary>
-		/// <param name="apiKeyOrBearerToken">The API key (for Basic authentication) or Bearer Token (for OAuth authentication) for the account we intend to access</param>
-		public Asana(string apiKeyOrBearerToken, AuthenticationType authType, Action<string, string, string, object> errorCallback)
-        {   
+        /// <param name="apiKeyOrBearerToken">The API key (for Basic authentication) or Bearer Token (for OAuth authentication) for the account we intend to access</param>
+        public Asana(string apiKeyOrBearerToken, AuthenticationType authType, Action<string, string, string, object> errorCallback)
+        {
             _baseUrl = "https://app.asana.com/api/1.0";
             _errorCallback = errorCallback;
 
-			AuthType = authType;
-			if (AuthType == AuthenticationType.OAuth) {
-				OAuthToken = apiKeyOrBearerToken;
-			} else {
-				APIKey = apiKeyOrBearerToken;
-				EncodedAPIKey = Convert.ToBase64String (System.Text.Encoding.ASCII.GetBytes(apiKeyOrBearerToken + ":"));
-			}
+            AuthType = authType;
+            if (AuthType == AuthenticationType.OAuth)
+            {
+                OAuthToken = apiKeyOrBearerToken;
+            }
+            else
+            {
+                APIKey = apiKeyOrBearerToken;
+                EncodedAPIKey = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(apiKeyOrBearerToken + ":"));
+            }
 
             AsanaFunction.InitFunctions();
         }
@@ -120,10 +133,10 @@ namespace AsanaNet
             string url = _baseUrl + string.Format(new PropertyFormatProvider(), function.Url, obj);
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-			if(AuthType == AuthenticationType.Basic)
-				request.Headers["Authorization"] = "Basic " + EncodedAPIKey;
-			else if(AuthType == AuthenticationType.OAuth)
-				request.Headers["Authorization"] = "Bearer " + OAuthToken;
+            if (AuthType == AuthenticationType.Basic)
+                request.Headers["Authorization"] = "Basic " + EncodedAPIKey;
+            else if (AuthType == AuthenticationType.OAuth)
+                request.Headers["Authorization"] = "Bearer " + OAuthToken;
             request.Method = function.Method;
             request.UserAgent = "AsanaNet (github.com/acron0/AsanaNet)";
             return new AsanaRequest(request, this);
@@ -147,16 +160,40 @@ namespace AsanaNet
             }
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-			if(AuthType == AuthenticationType.Basic)
-				request.Headers["Authorization"] = "Basic " + EncodedAPIKey;
-			else if(AuthType == AuthenticationType.OAuth)
-				request.Headers["Authorization"] = "Bearer " + OAuthToken;
+            if (AuthType == AuthenticationType.Basic)
+                request.Headers["Authorization"] = "Basic " + EncodedAPIKey;
+            else if (AuthType == AuthenticationType.OAuth)
+                request.Headers["Authorization"] = "Bearer " + OAuthToken;
             request.Method = function.Method;
             request.ContentType = "application/x-www-form-urlencoded";
             request.ContentLength = 0;
-            
+
             return new AsanaRequest(request, this);
         }
+
+
+        /// <summary>
+        /// Creates a base request object with authorization data AND POST data.
+        /// </summary>
+        /// <param name="pageOffset">Object contains the Followup Path</param>
+        /// <returns></returns>
+        internal AsanaRequest GetFollowUpRequest(PageOffset pageOffset)
+        {
+            string url = pageOffset.Uri;
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            if (AuthType == AuthenticationType.Basic)
+                request.Headers["Authorization"] = "Basic " + EncodedAPIKey;
+            else if (AuthType == AuthenticationType.OAuth)
+                request.Headers["Authorization"] = "Bearer " + OAuthToken;
+            request.Method = "GET";
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.ContentLength = 0;
+
+            return new AsanaRequest(request, this);
+        }
+
+
 
         /// <summary>
         /// Creates a base request object with authorization data AND POST data.
@@ -185,7 +222,7 @@ namespace AsanaNet
                 request.ContentType = "application/json";
                 using (var streamWriter = new StreamWriter(request.GetRequestStream()))
                 {
-                    var jsonString = "{\"data\": " +  json + "}";
+                    var jsonString = "{\"data\": " + json + "}";
                     //jsonString = "{\"data\": { \"name\": \"Buy catnip\" \"}";
 
                     streamWriter.Write(jsonString);
@@ -289,7 +326,7 @@ namespace AsanaNet
         /// Tells the asana object to save the specified object
         /// </summary>
         /// <param name="obj"></param>
-        internal Task Save<T>(T obj, AsanaFunction func, Dictionary<string, object> data = null) where T: AsanaObject
+        internal Task Save<T>(T obj, AsanaFunction func, Dictionary<string, object> data = null) where T : AsanaObject
         {
             IAsanaData idata = obj as IAsanaData;
             if (idata == null)
@@ -305,24 +342,25 @@ namespace AsanaNet
 
             request = GetBaseRequestWithParamsJson(func, data, obj);
             return request.Go((o, h) => RepackAndCallback(o, obj), ErrorCallback);
-        }    
-        
+        }
+
         /// <summary>
         /// Tells the asana object to save the specified object
         /// </summary>
         /// <param name="obj"></param>
-        internal Task<T> SaveAsync<T>(T obj, AsanaFunction func, Dictionary<string, object> data = null) where T: AsanaObject
+        internal Task<T> SaveAsync<T>(T obj, AsanaFunction func, Dictionary<string, object> data = null) where T : AsanaObject
         {
             var o = obj.GetType();
- 
+
             IAsanaData iData = (IAsanaData)obj;
             if (iData == null)
                 throw new NullReferenceException("All AsanaObjects must implement IAsanaData in order to Save themselves.");
 
             if (data == null)
                 data = Parsing.Serialize(obj, true, !iData.IsObjectLocal, true);
+
             AsanaRequest request = null;
-            AsanaFunctionAssociation afa = AsanaFunction.GetFunctionAssociation(obj.GetType());
+            var afa = AsanaFunction.GetFunctionAssociation(obj.GetType());
 
             if (func == null)
                 func = iData.IsObjectLocal ? afa.Create : afa.Update;
@@ -350,15 +388,15 @@ namespace AsanaNet
 
             if (idata.IsObjectLocal == false)
                 func = afa.Delete;
-            else 
+            else
                 throw new Exception("Object is local, cannot delete.");
 
             if (Object.ReferenceEquals(func, null)) throw new NotImplementedException("This object cannot delete itself.");
 
             request = GetBaseRequest(func, obj);
             return request.Go((o, h) => RepackAndCallback(o, obj), ErrorCallback);
-        }      
-        
+        }
+
         /// <summary>
         /// Tells asana to delete the specified object
         /// </summary>
@@ -376,7 +414,7 @@ namespace AsanaNet
 
             if (idata.IsObjectLocal == false)
                 func = afa.Delete;
-            else 
+            else
                 throw new Exception("Object is local, cannot delete.");
 
             if (Object.ReferenceEquals(func, null)) throw new NotImplementedException("This object cannot delete itself.");

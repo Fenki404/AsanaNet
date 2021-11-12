@@ -25,6 +25,11 @@ namespace AsanaNet
             throw new NotImplementedException();
         }
 
+        public void SetId(long id)
+        {
+            ID = id;
+        }
+
         public static implicit operator AsanaWorkspace(long ID)
         {
             return Create(typeof(AsanaWorkspace), ID) as AsanaWorkspace;

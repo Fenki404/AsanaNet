@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AsanaNet.Extensions;
 using AsanaNet.Objects;
+using Microsoft.CSharp.RuntimeBinder;
 
 namespace AsanaNet
 {
@@ -179,9 +180,10 @@ namespace AsanaNet
     [Serializable]
     public class BaseAsanaTask : AsanaObject, IAsanaData
     {
+        private AsanaDateTime _startAt;
+        private AsanaDateTime _startOn;
         private AsanaDateTime _dueAt;
         private AsanaDateTime _dueOn;
-        private AsanaDateTime _startAt;
 
         //[AsanaDataAttribute("resource_type", SerializationFlags.Required)]
         //public string ResourceType => AsanaNet.Objects.ResourceType.Project;
@@ -189,7 +191,7 @@ namespace AsanaNet
         [AsanaDataAttribute("name", SerializationFlags.Required)]
         public string Name { get; set; }
 
-        [AsanaDataAttribute("assignee", SerializationFlags.Optional, "ID")]
+        [AsanaDataAttribute("assignee", SerializationFlags.Optional | SerializationFlags.WriteNull, "ID")]
         public AsanaUser Assignee { get; set; }
 
         [AsanaDataAttribute("assignee_status", SerializationFlags.Omit)]
@@ -207,57 +209,46 @@ namespace AsanaNet
         [AsanaDataAttribute("num_subtasks", SerializationFlags.Optional)]
         public int SubTaskCount { get; set; }
 
+
+
+
+        [AsanaDataAttribute("start_on", SerializationFlags.ReadOnly)]
+        public AsanaDateTime StartOn
+        {
+            get => _startOn;
+            set => _startOn = value;
+        }
+
+        [AsanaDataAttribute("start_at", SerializationFlags.Optional)]
+        public AsanaDateTime StartAt
+        {
+            get => _startAt;
+            set => _startAt = value;
+            //if (value > DueAt && DueAt != null)
+            //{
+            //    DueAt = DueAt.DateTime.AddDays(1);
+            //}
+        }
+
+
         [AsanaDataAttribute("due_on", SerializationFlags.ReadOnly)]
         public AsanaDateTime DueOn
         {
             get => _dueOn;
-            set
-            {
-                _dueOn = value;
-            }
+            set => _dueOn = value;
         }
 
         [AsanaDataAttribute("due_at", SerializationFlags.Optional)]
         public AsanaDateTime DueAt
         {
-            get
-            {
-                return _dueAt;
-            }
-            set
-            {
-                if (value < StartAt && StartAt != null)
-                {
-                    _dueAt = StartAt.DateTime.Add(TimeSpan.FromMinutes(1));
-                    return;
-                }
-
-                _dueAt = value;
-            }
+            get => _dueAt;
+            set => _dueAt = value;
+            //if (value < StartAt && StartAt != null)
+            //{
+            //    StartAt = StartAt.DateTime.AddDays(-1);
+            //}
         }
 
-
-        [AsanaDataAttribute("start_on", SerializationFlags.ReadOnly)]
-        public AsanaDateTime StartOn { get; set; }
-
-        [AsanaDataAttribute("start_at", SerializationFlags.Optional)]
-        public AsanaDateTime StartAt
-        {
-            get
-            {
-                return _startAt;
-            }
-            set
-            {
-                if (value > DueAt && DueAt != null)
-                {
-                    _startAt = DueAt.DateTime.Subtract(TimeSpan.FromMinutes(1));
-                    return;
-                }
-
-                _startAt = value;
-            }
-        }
 
         [AsanaDataAttribute("dependents", SerializationFlags.Optional)]
         public AsanaDependent[] Dependents { get; protected set; }
@@ -327,10 +318,13 @@ namespace AsanaNet
 
         public void SetWorkspace(AsanaWorkspace workspace)
         {
+            if (workspace == null) return;
             Workspace = workspace;
+
+            if (Projects == null) return;
             foreach (var asanaProject in Projects)
             {
-                asanaProject.SetWorkspace(workspace);
+                asanaProject?.SetWorkspace(workspace);
             }
         }
 

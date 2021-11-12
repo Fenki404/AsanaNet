@@ -12,7 +12,8 @@ namespace AsanaNet
         Required = 2,
         Omit = 4,
         ReadOnly = 8,
-        WriteField = 16
+        WriteField = 16,
+        WriteNull = 32,
     }
 
     [System.AttributeUsage(System.AttributeTargets.Property, AllowMultiple = false)]

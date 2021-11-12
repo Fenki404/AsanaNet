@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,9 +26,10 @@ namespace AsanaNet.Sample
             //MonitorProjectChanges(733775454290030, TimeSpan.FromSeconds(5)).Wait();
 
             //GetProjectAsync(1200791760303935).Wait();
-            //UpdateTaskAsync(1200824929472797).Wait();
-
-            AddSection().Wait();
+            //UpdateTaskAsync(1200844375334941).Wait();
+            UpdateTaskAsync(1201353834582988).Wait();
+            //https://app.asana.com/0/1200791760303935/1200844375334941/f
+            //AddSection().Wait();
 
             //Console.ReadLine();
         }
@@ -209,13 +211,23 @@ namespace AsanaNet.Sample
             Console.WriteLine($"      Task: {task.Name}  {task.StartAt?.DateTime} -> {task.DueAt?.DateTime}");
             task.Notes = "updated Note";
 
-            if (task.DueAt != null)
-                task.DueAt.DateTime += TimeSpan.FromMinutes(10);
-            else
-            {
-                task.DueAt = new AsanaDateTime(DateTime.Now);
-            }
-            await task.SaveAsync<AsanaTask>();
+
+            task.CustomFields[2].SetEnumValue(task.CustomFields[2].EnumOptions[0]);
+            //task.CustomFields[2].SetEnumValue(null);
+
+            //if (task.DueAt != null)
+            //    task.DueAt.DateTime += TimeSpan.FromMinutes(10);
+            //else
+            //{
+            //    task.DueAt = new AsanaDateTime(DateTime.Now);
+            //}
+
+
+            Console.WriteLine(task.CustomFields);
+
+            //task.Assignee = null;
+
+            var result = await task.SaveAsync<AsanaTask>();
 
             task = await asana.GetTaskByIdAsync(id, properties);
             Console.WriteLine($"      Task: {task.Name}  {task.StartAt?.DateTime} -> {task.DueAt?.DateTime}");

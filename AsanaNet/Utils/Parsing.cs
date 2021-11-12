@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using System.Reflection;
+using AsanaNet.Objects;
 
 namespace AsanaNet
 {
@@ -208,6 +209,7 @@ namespace AsanaNet
 
                     bool required = dataAttribute.Flags.HasFlag(SerializationFlags.Required);
                     bool writeField = dataAttribute.Flags.HasFlag(SerializationFlags.WriteField);
+                    bool writeNull = dataAttribute.Flags.HasFlag(SerializationFlags.WriteNull);
 
 
                     object value = property.GetValue(obj, new object[] { });
@@ -218,10 +220,19 @@ namespace AsanaNet
                     bool present = ValidateSerializableValue(ref value, dataAttribute, property);
 
                     if (present == false)
+                    {
+                        if (writeNull)
+                        {
+                            dict.Add(dataAttribute.Name, asString ? "null" : value);
+                            continue;
+                        }
+
                         if (!required)
                             continue;
                         else
                             throw new MissingFieldException("Couldn't save object because it was missing a required field: " + property.Name);
+                    }
+
 
 
                     if (writeField && dataAttribute.Fields.Length == 1)
@@ -237,13 +248,33 @@ namespace AsanaNet
 
                     if (value.GetType().IsArray)
                     {
-                        int count = 0;
-                        foreach (var x in (object[])value)
+                        if (value is AsanaCustomField[] customFields)
                         {
+                            int count = 0;
+                            var entries = new Dictionary<string, string>();
 
-                            dict.Add(dataAttribute.Name + "[" + count + "]", asString ? x.ToString() : x);
-                            count++;
+                            foreach (var cf in customFields)
+                            {
+                                if (cf.ResourceSubtype == "enum")
+                                {
+                                    entries.Add(cf.ID.ToString(), cf.EnumValue?.ID.ToString() ?? "null");
+                                }
+
+                            }
+
+                            dict.Add(dataAttribute.Name, entries);
                         }
+                        else
+                        {
+                            int count = 0;
+                            foreach (var x in (object[])value)
+                            {
+                                dict.Add(dataAttribute.Name + "[" + count + "]", asString ? x.ToString() : x);
+                                count++;
+                            }
+                        }
+
+
                     }
                     else
                     {

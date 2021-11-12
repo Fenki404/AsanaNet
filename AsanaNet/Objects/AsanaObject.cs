@@ -20,8 +20,9 @@ namespace AsanaNet
     }
 
     [Serializable]
-    public abstract class AsanaObject
+    public abstract class AsanaObject : IEquatable<AsanaObject>
     {
+
         [AsanaDataAttribute("gid", SerializationFlags.Omit)]
         public Int64 ID { get; protected set; }
 
@@ -129,16 +130,10 @@ namespace AsanaNet
 
         public override bool Equals(object obj)
         {
-            if (obj is AsanaObject)
-            {
-                return this.ID == (obj as AsanaObject).ID;
-            }
-            if (obj is Int64)
-            {
-                return this.ID == (Int64)obj;
-            }
-
-            return false;
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((AsanaObject)obj);
         }
 
         public override int GetHashCode()
@@ -161,6 +156,34 @@ namespace AsanaNet
             if ((host ?? Host) == null)
                 throw new NullReferenceException("Host not set to remote data update.");
         }
+
+
+        private sealed class IdEqualityComparer : IEqualityComparer<AsanaObject>
+        {
+            public bool Equals(AsanaObject x, AsanaObject y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (ReferenceEquals(x, null)) return false;
+                if (ReferenceEquals(y, null)) return false;
+                if (x.GetType() != y.GetType()) return false;
+                return x.ID == y.ID;
+            }
+
+            public int GetHashCode(AsanaObject obj)
+            {
+                return obj.ID.GetHashCode();
+            }
+        }
+
+        public static IEqualityComparer<AsanaObject> IdComparer { get; } = new IdEqualityComparer();
+
+        public bool Equals(AsanaObject other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return ID == other.ID;
+        }
+
     }
 
     public interface IAsanaObjectCollection : IList

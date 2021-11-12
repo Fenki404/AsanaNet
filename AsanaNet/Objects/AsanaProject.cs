@@ -46,8 +46,6 @@ namespace AsanaNet
         public AsanaDateTime DueOn { get; set; }
 
 
-
-
         [AsanaDataAttribute("custom_fields", SerializationFlags.Optional)]
         public AsanaCustomField[] CustomFields { get; set; }
 
@@ -113,5 +111,6 @@ namespace AsanaNet
             Team = project.Team;
             Color = project.Color;
         }
+
     }
 }

@@ -35,5 +35,10 @@ namespace AsanaNet.Objects
         {
             throw new NotImplementedException();
         }
+
+        public bool Is(long id)
+        {
+            return Enabled && id == ID;
+        }
     }
 }

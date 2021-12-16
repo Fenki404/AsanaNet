@@ -54,7 +54,7 @@ namespace AsanaNet.Interfaces
             Dictionary<string, object> args = null);
         Task<AsanaSection> CreateSectionInAProjectAsync(long projectId, Dictionary<string, object> args = null);
         Task<AsanaSection> GetSectionByIdAsync(long id, Dictionary<string, object> args = null);
-        Task<IAsanaObjectCollection<AsanaSection>> GetSectionsInAProjectAsync(AsanaWorkspace asanaWorkspace,
+        Task<IAsanaObjectCollection<AsanaSection>> GetSectionsInAProjectAsync(long sectionId,
             Dictionary<string, object> args = null);
 
         Task GetStoriesInTask(AsanaTask asanaTask, AsanaCollectionResponseEventHandler callback);

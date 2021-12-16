@@ -206,9 +206,10 @@ namespace AsanaNet
             return request.GoAsync<AsanaSection>();
         }
 
-        public Task<IAsanaObjectCollection<AsanaSection>> GetSectionsInAProjectAsync(AsanaWorkspace asanaWorkspace, Dictionary<string, object> args = null)
+
+        public Task<IAsanaObjectCollection<AsanaSection>> GetSectionsInAProjectAsync(long sectionId, Dictionary<string, object> args = null)
         {
-            var request = GetBaseRequestWithParams(AsanaFunction.GetFunction(Function.GetSectionsInAProject), args, asanaWorkspace);
+            var request = GetBaseRequestWithParams(AsanaFunction.GetFunction(Function.GetSectionsInAProject), args, sectionId);
             return request.GoCollectionAsync<AsanaSection>(GoCollectionMaxRecursiveCount);
         }
 

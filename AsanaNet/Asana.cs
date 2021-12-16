@@ -217,7 +217,7 @@ namespace AsanaNet
             if (args != null && args.Count > 0)
             {
                 var json = JsonConvert.SerializeObject(args);
-                Console.WriteLine($"GetBaseRequestWithParamsJson: {json}");
+                //Console.WriteLine($"GetBaseRequestWithParamsJson: {json}");
 
                 request.Accept = "Accept=application/json";
                 request.ContentType = "application/json";

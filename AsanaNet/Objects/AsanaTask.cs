@@ -361,9 +361,6 @@ namespace AsanaNet
         }
 
 
-
-
-
         public Task RemoveProject(AsanaProject proj, Asana host)
         {
             Dictionary<string, object> project = new Dictionary<string, object>();
@@ -392,6 +389,16 @@ namespace AsanaNet
             return RemoveProject(proj, Host);
         }
 
+
+        //public void SetDependencies(IEnumerable<AsanaDependent> dependents)
+        //{
+        //    this.Dependencies = dependents.ToArray();
+        //}    
+        //public void AddDependency(AsanaDependent dependency)
+        //{
+        //    var temp = new[] { dependency };
+        //    Dependencies = Dependencies.Concat(temp).ToArray();
+        //}
 
 
         public Task AddTag(AsanaTag proj, Asana host)

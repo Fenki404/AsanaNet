@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AsanaNet.Objects
 {
@@ -24,6 +25,9 @@ namespace AsanaNet.Objects
 
         [AsanaData("created_by", SerializationFlags.Optional)]
         public AsanaUser CreatedBy { get; set; }
+
+        [AsanaData("text_value", SerializationFlags.Optional)]
+        public string TextValue { get; set; }
 
         [AsanaData("display_value", SerializationFlags.Optional)]
         public string DisplayValue { get; set; }
@@ -71,10 +75,42 @@ namespace AsanaNet.Objects
             return Enabled && EnumValue.Is(id);
         }
 
-        public void SetEnumValue(EnumValue value)
+        public void SetValue(AsanaCustomField value)
         {
-            EnumValue = value;
-            DisplayValue = value?.Name;
+            switch (ResourceSubtype)
+            {
+                case "enum":
+                    SetEnumValue(value.EnumValue);
+                    break;
+                case "text":
+                    SetTextValue(value.TextValue);
+                    break;
+            }
+
+
+
+        }
+        private void SetEnumValue(EnumValue value)
+        {
+            if (value == null)
+            {
+                EnumValue = null;
+                DisplayValue = null;
+
+                return;
+            }
+
+            var selectedOption = EnumOptions.ToList()
+                .FirstOrDefault(x => x?.ID == value?.ID && value?.ID != null) ?? value;
+
+            EnumValue = selectedOption;
+            DisplayValue = selectedOption.Name;
+            Enabled = true;
+        }
+        private void SetTextValue(string value)
+        {
+            TextValue = value;
+            Enabled = value != null;
         }
 
         private sealed class EnumValueEqualityComparer : IEqualityComparer<AsanaCustomField>

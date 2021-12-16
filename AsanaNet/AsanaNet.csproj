@@ -92,7 +92,7 @@
     <Compile Include="Objects\AsanaTag.cs" />
     <Compile Include="Objects\AsanaTask.cs" />
     <Compile Include="Objects\AsanaUser.cs" />
-    <Compile Include="Objects\AsanaWorkspace.cs" />
+    <Compile Include="Objects\object.cs" />
     <Compile Include="MiniJSON.cs" />
     <Compile Include="Objects\AsanaTeam.cs" />
     <Compile Include="Objects\DynamicDictionary.cs" />

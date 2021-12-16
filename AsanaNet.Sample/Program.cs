@@ -211,8 +211,12 @@ namespace AsanaNet.Sample
             Console.WriteLine($"      Task: {task.Name}  {task.StartAt?.DateTime} -> {task.DueAt?.DateTime}");
             task.Notes = "updated Note";
 
-
-            task.CustomFields[2].SetEnumValue(task.CustomFields[2].EnumOptions[0]);
+            var newCF = new AsanaCustomField()
+            {
+                ResourceSubtype = "enum",
+                EnumValue = task.CustomFields[2].EnumOptions[1]
+            };
+            task.CustomFields[2].SetValue(newCF);
             //task.CustomFields[2].SetEnumValue(null);
 
             //if (task.DueAt != null)

@@ -27,6 +27,7 @@ namespace AsanaNet.Interfaces
         /// </summary>
         string OAuthToken { get; set; }
 
+        void SetApiKey(string key);
         Asana GetHost();
 
         Task GetUsers(AsanaCollectionResponseEventHandler callback);
@@ -43,6 +44,8 @@ namespace AsanaNet.Interfaces
         Task<IAsanaObjectCollection<AsanaUser>> GetUsersInWorkspaceAsync(AsanaWorkspace asanaWorkspace, Dictionary<string, object> args = null);
         Task GetTasksInWorkspace(AsanaWorkspace asanaWorkspace, AsanaUser asanaUser, AsanaCollectionResponseEventHandler callback);
         Task<IAsanaObjectCollection<AsanaTask>> GetTasksInWorkspaceAsync(AsanaWorkspace asanaWorkspace, AsanaUser asanaUser, Dictionary<string, object> args = null);
+        Task<IAsanaObjectCollection<AsanaTask>> GetTasksBySearchAsync(AsanaWorkspace asanaWorkspace,
+            Dictionary<string, object> args = null);
         Task GetProjectsInWorkspace(AsanaWorkspace asanaWorkspace, AsanaCollectionResponseEventHandler callback);
         Task<IAsanaObjectCollection<AsanaProject>> GetProjectsInWorkspaceAsync(AsanaWorkspace asanaWorkspace, Dictionary<string, object> args = null);
         Task GetTagsInWorkspace(AsanaWorkspace asanaWorkspace, AsanaCollectionResponseEventHandler callback);
@@ -59,6 +62,14 @@ namespace AsanaNet.Interfaces
 
         Task GetStoriesInTask(AsanaTask asanaTask, AsanaCollectionResponseEventHandler callback);
         Task<IAsanaObjectCollection<AsanaStory>> GetStoriesInTaskAsync(AsanaTask asanaTask);
+        Task DuplicateTaskById(Int64 int64, AsanaDuplicateTaskSettings settings, AsanaResponseEventHandler callback);
+        Task<AsanaDuplicateTaskJob> DuplicateTaskByIdAsync(long int64, AsanaDuplicateTaskSettings settings);
+
+        Task<IAsanaObjectCollection<AsanaDependent>> GetTaskDependentsAsync(AsanaTask task);
+        Task<IAsanaObjectCollection<AsanaDependent>> GetTaskDependenciesAsync(AsanaTask task);
+
+
+
         Task GetProjectsOnATask(AsanaTask asanaTask, AsanaCollectionResponseEventHandler callback);
         Task<IAsanaObjectCollection<AsanaProject>> GetProjectsOnATaskAsync(AsanaTask asanaTask);
         Task GetTasksByTag(AsanaTag asanaTag, AsanaCollectionResponseEventHandler callback);

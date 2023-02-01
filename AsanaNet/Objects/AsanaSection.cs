@@ -6,6 +6,7 @@ namespace AsanaNet.Objects
     [Serializable]
     public class AsanaSection : AsanaObject, IAsanaData
     {
+ 
         [AsanaDataAttribute("name", SerializationFlags.Required)]
         public string Name { get; set; }
 
@@ -49,6 +50,26 @@ namespace AsanaNet.Objects
         {
             return Parsing.SerializePropertiesToArgs(new AsanaSection());
         }
+
+        private sealed class NameEqualityComparer : IEqualityComparer<AsanaSection>
+        {
+            public bool Equals(AsanaSection x, AsanaSection y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (ReferenceEquals(x, null)) return false;
+                if (ReferenceEquals(y, null)) return false;
+                if (x.GetType() != y.GetType()) return false;
+                return x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase);
+            }
+
+            public int GetHashCode(AsanaSection obj)
+            {
+                return (obj.Name != null ? obj.Name.GetHashCode() : 0);
+            }
+        }
+
+        public static IEqualityComparer<AsanaSection> NameComparer { get; } = new NameEqualityComparer();
+
     }
 
     [Serializable]

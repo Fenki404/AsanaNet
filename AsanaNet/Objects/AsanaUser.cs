@@ -24,6 +24,16 @@ namespace AsanaNet
 
         public bool IsObjectLocal { get { return ID == 0; } }
 
+        public AsanaUser()
+        {
+            
+        }
+
+        public AsanaUser(long id)
+        {
+            ID = id;
+        }
+
         public void Complete()
         {
             throw new NotImplementedException();

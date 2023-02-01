@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace AsanaNet
@@ -39,17 +40,66 @@ namespace AsanaNet
         public event AsanaResponseEventHandler Saved;
 
         // memento
-        private Dictionary<string, object> _lastSave;
+        protected Dictionary<string, object> _lastSave;
 
         internal bool IsDirty(string key, object value)
         {
-            object lvalue = null;
-            if (_lastSave != null && _lastSave.TryGetValue(key, out lvalue))
+            if (_lastSave != null)
             {
-                return !value.Equals(lvalue);
+                var gotValue = _lastSave.TryGetValue(key, out var lastValue);
+                if (!gotValue) 
+                    return true;
+
+                if (value == null && lastValue == null) 
+                    return false;
+                if (value == null) 
+                    return !lastValue.Equals(null);
+
+                return !value.Equals(lastValue);
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Set all Properties to Unchanged State
+        /// </summary>
+        public void SetPropertiesUnchanged()
+        {
+            _lastSave = new Dictionary<string, object>();
+
+            foreach (var property in this.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                var customAttributes = property.GetCustomAttributes(typeof(AsanaDataAttribute), false);
+                if (customAttributes.Length == 0)
+                    continue;
+
+                var dataAttribute = customAttributes[0] as AsanaDataAttribute;
+                var value = property.GetValue(this, new object[] { });
+
+                if (dataAttribute != null) _lastSave.Add(dataAttribute.Name, value);
+            }
+        }
+
+        public void SetPropertiesChanged()
+        {
+            _lastSave = new Dictionary<string, object>();
+        }
+        public void SetPropertyChanged(string propertyName)
+        { 
+            var properties = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var objectProperty = properties.FirstOrDefault(x => x.Name == propertyName);
+            if(objectProperty == null) return;
+
+            var customAttributes = objectProperty.GetCustomAttributes(typeof(AsanaDataAttribute), false);
+            if (customAttributes.Length == 0)
+                return;
+
+            var dataAttribute = customAttributes[0] as AsanaDataAttribute;
+            var name = dataAttribute?.Name;
+            
+            if(name != null) 
+                _lastSave?.Remove(name);
         }
 
         internal void SavingCallback(Dictionary<string, object> saved)
@@ -118,12 +168,12 @@ namespace AsanaNet
             return new Dictionary<string, object>();
         }
 
-        public static bool operator ==(AsanaObject a, Int64 id)
+        public static bool operator ==(AsanaObject a, long id)
         {
             return a.ID == id;
         }
 
-        public static bool operator !=(AsanaObject a, Int64 id)
+        public static bool operator !=(AsanaObject a, long id)
         {
             return a.ID != id;
         }
@@ -182,6 +232,18 @@ namespace AsanaNet
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return ID == other.ID;
+        }
+
+        public static NullReferenceException HostNullReferenceException()
+        {
+            return new NullReferenceException(
+                "This AsanaObject does not have a host associated with it so you must specify one when saving.");
+        }
+
+        public static NullReferenceException ApiKeyNullReferenceException()
+        {
+            return new NullReferenceException(
+                "This AsanaObject does not have a API Key associated with it so you must specify one when saving.");
         }
 
     }
@@ -252,14 +314,17 @@ namespace AsanaNet
             if (obj.Host == null && host != null)
             {
                 var response = await host.SaveAsync(obj, null);
+                response?.SetPropertiesUnchanged();
+
                 return (T)Convert.ChangeType(response, typeof(T), CultureInfo.InvariantCulture);
             }
             else
             {
                 var response = await obj.Host.SaveAsync(obj, null);
+                response?.SetPropertiesUnchanged();
+
                 return (T)Convert.ChangeType(response, typeof(T), CultureInfo.InvariantCulture);
             }
-
         }
 
 
@@ -294,5 +359,7 @@ namespace AsanaNet
                 //return (T)Convert.ChangeType(response, typeof(T));
             }
         }
+
+      
     }
 }

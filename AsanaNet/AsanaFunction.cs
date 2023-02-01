@@ -8,19 +8,23 @@ namespace AsanaNet
 {
     public partial class AsanaFunction
     {
-        private static Dictionary<Function, AsanaFunction> Functions = new Dictionary<Function, AsanaFunction>();
-        private static Dictionary<Type, AsanaFunctionAssociation> Associations = new Dictionary<Type, AsanaFunctionAssociation>();
+        private readonly Dictionary<Function, AsanaFunction> Functions = new Dictionary<Function, AsanaFunction>();
+        private readonly Dictionary<Type, AsanaFunctionAssociation> Associations = new Dictionary<Type, AsanaFunctionAssociation>();
 
         public string Url { get; private set; }
         public string Method { get; private set; }
 
+        public AsanaFunction()
+        {
+            
+        }
         public AsanaFunction(string url, string methd)
         {
             Url = url;
             Method = methd;
         }
 
-        static public AsanaFunction GetFunction(Function en)
+        public AsanaFunction GetFunction(Function en)
         {
             if (!Functions.ContainsKey(en))
             {
@@ -36,7 +40,7 @@ namespace AsanaNet
             return Functions[en];
         }
 
-        static public AsanaFunctionAssociation GetFunctionAssociation(Type t)
+        public AsanaFunctionAssociation GetFunctionAssociation(Type t)
         {
             return Associations[t];
         }

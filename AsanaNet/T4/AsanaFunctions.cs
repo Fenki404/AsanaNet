@@ -20,16 +20,38 @@ namespace AsanaNet
         GetUsersInWorkspace,
         GetProjectsInWorkspace,
         GetTagsInWorkspace,
+
         GetTaskById,
         GetTasksInWorkspace,
+        GetTasksBySearch,
         GetTasksInAProject,
         GetTasksInASection,
         GetTasksByTag,
         GetTasksByAssignee,
         GetSubTasksInATask,
         GetDependenciesTasks,
+        DuplicateTask,
+        GetTaskDependencies,
+        SetTaskDependencies,
+        UnlinkTaskDependencies,
+        GetTaskDependents,
+        SetTaskDependents,
+        UnlinkTaskDependents,
+        AddTaskToSection,
+        AddSubTaskToTask,
+        AddProjectToTask,
+        TaskSetParent,
+        RemoveProjectFromTask,
+        AddStoryToTask,
+        AddTagToTask,
+        RemoveTagFromTask,
+        AddFollowersToTask,
+        RemoveFollowersFromTask,
+        UpdateTask,
+        DeleteTask,
         GetStoriesInTask,
         GetProjectsOnATask,
+
         GetStoryById,
         GetProjectById,
         GetJobById,
@@ -37,7 +59,7 @@ namespace AsanaNet
         GetSection,
         GetSectionById,
         GetSectionsInAProject,
-        AddTaskToSection,
+        
         CreateSectionInAProject,
         UpdateSection,
         DeleteSection,
@@ -47,21 +69,19 @@ namespace AsanaNet
         GetEventsInAProject,
         GetEventsInTask,
         CreateWorkspaceTask,
-        AddSubTaskToTask,
-        AddProjectToTask,
-        RemoveProjectFromTask,
-        AddStoryToTask,
-        AddTagToTask,
-        RemoveTagFromTask,
+
         CreateWorkspaceProject,
         CreateWorkspaceTag,
-        UpdateTask,
         UpdateTag,
         UpdateProject,
         UpdateWorkspace,
-        DeleteTask,
         DeleteProject,
-        DuplicateProject
+        DuplicateProject,
+        AddCustomFieldToProject,
+        AddUsersToProject,
+        RemoveUsersFromProject,
+        AddFollowersToProject,
+        RemoveFollowerFromProject,
     }
 
     // Function definitions specifically for the GET functions.
@@ -149,6 +169,12 @@ namespace AsanaNet
         public Task<IAsanaObjectCollection<AsanaTask>> GetTasksInWorkspaceAsync(AsanaWorkspace asanaWorkspace, AsanaUser asanaUser, Dictionary<string, object> args = null)
         {
             var request = GetBaseRequestWithParams(AsanaFunction.GetFunction(Function.GetTasksInWorkspace), args, asanaWorkspace, asanaUser);
+            return request.GoCollectionAsync<AsanaTask>(GoCollectionMaxRecursiveCount);
+        }
+
+        public Task<IAsanaObjectCollection<AsanaTask>> GetTasksBySearchAsync(AsanaWorkspace asanaWorkspace, Dictionary<string, object> args = null)
+        {
+            var request = GetBaseRequestWithParams(AsanaFunction.GetFunction(Function.GetTasksBySearch), args, asanaWorkspace);
             return request.GoCollectionAsync<AsanaTask>(GoCollectionMaxRecursiveCount);
         }
 
@@ -247,18 +273,6 @@ namespace AsanaNet
             return request.GoCollectionAsync<AsanaProject>(GoCollectionMaxRecursiveCount);
         }
 
-        public Task GetTasksByTag(AsanaTag asanaTag, AsanaCollectionResponseEventHandler callback)
-        {
-            var request = GetBaseRequest(AsanaFunction.GetFunction(Function.GetTasksByTag), asanaTag);
-            return request.Go((o, h) => PackAndSendResponseCollection<AsanaTask>(o, callback), ErrorCallback);
-        }
-
-        public Task<IAsanaObjectCollection<AsanaTask>> GetTasksByTagAsync(AsanaTag asanaTag)
-        {
-            var request = GetBaseRequest(AsanaFunction.GetFunction(Function.GetTasksByTag), asanaTag);
-            return request.GoCollectionAsync<AsanaTask>(GoCollectionMaxRecursiveCount);
-        }
-
         public Task GetStoryById(long int64, AsanaResponseEventHandler callback)
         {
             var request = GetBaseRequest(AsanaFunction.GetFunction(Function.GetStoryById), int64);
@@ -302,6 +316,9 @@ namespace AsanaNet
             return request.GoAsync<AsanaProject>();
         }
 
+
+        #region TASK
+
         public Task GetTasksInAProject(AsanaProject asanaProject, AsanaCollectionResponseEventHandler callback)
         {
             var request = GetBaseRequest(AsanaFunction.GetFunction(Function.GetTasksInAProject), asanaProject);
@@ -330,6 +347,48 @@ namespace AsanaNet
             var request = GetBaseRequestWithParams(AsanaFunction.GetFunction(Function.GetDependenciesTasks), args, asanaTask);
             return request.GoCollectionAsync<AsanaTask>(GoCollectionMaxRecursiveCount);
         }
+
+        public Task GetTasksByTag(AsanaTag asanaTag, AsanaCollectionResponseEventHandler callback)
+        {
+            var request = GetBaseRequest(AsanaFunction.GetFunction(Function.GetTasksByTag), asanaTag);
+            return request.Go((o, h) => PackAndSendResponseCollection<AsanaTask>(o, callback), ErrorCallback);
+        }
+
+        public Task<IAsanaObjectCollection<AsanaTask>> GetTasksByTagAsync(AsanaTag asanaTag)
+        {
+            var request = GetBaseRequest(AsanaFunction.GetFunction(Function.GetTasksByTag), asanaTag);
+            return request.GoCollectionAsync<AsanaTask>(GoCollectionMaxRecursiveCount);
+        }
+
+        public Task DuplicateTaskById(long int64, AsanaDuplicateTaskSettings settings, AsanaResponseEventHandler callback)
+        {
+            var data = Parsing.Serialize(settings, true, false);
+            var request = GetBaseRequestWithParams(AsanaFunction.GetFunction(Function.DuplicateTask), data, int64);
+            return request.Go((o, h) => PackAndSendResponse<AsanaDuplicateTaskJob>(o, callback), ErrorCallback);
+        }
+        public Task<AsanaDuplicateTaskJob> DuplicateTaskByIdAsync(long int64, AsanaDuplicateTaskSettings settings)
+        {
+            var data = Parsing.Serialize(settings, true, false);
+            var request = GetBaseRequestWithParamsJson(AsanaFunction.GetFunction(Function.DuplicateTask), data, int64);
+            var task = request.GoAsync<AsanaDuplicateTaskJob>();
+            return task;
+        }
+
+
+        public Task<IAsanaObjectCollection<AsanaDependent>> GetTaskDependentsAsync(AsanaTask task)
+        {
+            var request = GetBaseRequest(AsanaFunction.GetFunction(Function.GetTaskDependents), task);
+            return request.GoCollectionAsync<AsanaDependent>(GoCollectionMaxRecursiveCount);
+        }
+        public Task<IAsanaObjectCollection<AsanaDependent>> GetTaskDependenciesAsync(AsanaTask task)
+        {
+            var request = GetBaseRequest(AsanaFunction.GetFunction(Function.GetTaskDependencies), task);
+            return request.GoCollectionAsync<AsanaDependent>(GoCollectionMaxRecursiveCount);
+        }
+
+        #endregion
+
+
 
         public Task GetTagById(long int64, AsanaResponseEventHandler callback)
         {
@@ -628,14 +687,12 @@ namespace AsanaNet
             throw new TypeAccessException("Unknown type for this request: " + typeof(AsanaT).Name);
         }
 
-
-
     }
 
     // Binds the enums, formations and methods
     public partial class AsanaFunction
     {
-        internal static void InitFunctions()
+        internal void InitFunctions()
         {
             if (Functions.Any() || Associations.Any())
                 return;
@@ -647,6 +704,7 @@ namespace AsanaNet
             Functions.Add(Function.GetWorkspaceById, new AsanaFunction("/workspaces/{0}", "GET"));
             Functions.Add(Function.GetUsersInWorkspace, new AsanaFunction("/workspaces/{0:ID}/users", "GET"));
             Functions.Add(Function.GetTasksInWorkspace, new AsanaFunction("/workspaces/{0:ID}/tasks?assignee={1:ID}", "GET"));
+            Functions.Add(Function.GetTasksBySearch, new AsanaFunction("/workspaces/{0:ID}/tasks/search", "GET"));
             Functions.Add(Function.GetProjectsInWorkspace, new AsanaFunction("/workspaces/{0:ID}/projects", "GET"));
             Functions.Add(Function.GetTagsInWorkspace, new AsanaFunction("/workspaces/{0:ID}/tags", "GET"));
 
@@ -665,6 +723,7 @@ namespace AsanaNet
             Functions.Add(Function.GetDependenciesTasks, new AsanaFunction("/tasks/{0:ID}/dependencies", "GET"));
             Functions.Add(Function.GetEventsInTask, new AsanaFunction("/tasks/{0:ID}/events?sync={1}", "GET"));
 
+            Functions.Add(Function.TaskSetParent, new AsanaFunction("/tasks/{0}/setParent", "POST"));
             Functions.Add(Function.AddSubTaskToTask, new AsanaFunction("/tasks/{0:ID}/subtasks", "POST"));
             Functions.Add(Function.CreateWorkspaceTask, new AsanaFunction("/tasks", "POST"));
             Functions.Add(Function.AddTaskToSection, new AsanaFunction("/sections/{0:Target}/addTask", "POST"));
@@ -673,8 +732,18 @@ namespace AsanaNet
             Functions.Add(Function.AddStoryToTask, new AsanaFunction("/tasks/{0:Target}/stories", "POST"));
             Functions.Add(Function.AddTagToTask, new AsanaFunction("/tasks/{0:ID}/addTag", "POST"));
             Functions.Add(Function.RemoveTagFromTask, new AsanaFunction("/tasks/{0:ID}/removeTag", "POST"));
-
+            Functions.Add(Function.AddFollowersToTask, new AsanaFunction("/tasks/{0:ID}/addFollowers", "POST"));
+            Functions.Add(Function.RemoveFollowersFromTask, new AsanaFunction("/tasks/{0:ID}/removeFollowers", "POST"));
             Functions.Add(Function.GetTasksByTag, new AsanaFunction("/tags/{0:ID}/tasks", "GET"));
+            Functions.Add(Function.DuplicateTask, new AsanaFunction("/tasks/{0}/duplicate", "POST"));
+            Functions.Add(Function.GetTaskDependents, new AsanaFunction("/tasks/{0}/dependents", "GET"));
+            Functions.Add(Function.SetTaskDependents, new AsanaFunction("/tasks/{0}/addDependents", "POST"));
+            Functions.Add(Function.UnlinkTaskDependents, new AsanaFunction("/tasks/{0}/removeDependents", "POST"));
+            Functions.Add(Function.GetTaskDependencies, new AsanaFunction("/tasks/{0}/dependencies", "GET"));
+            Functions.Add(Function.SetTaskDependencies, new AsanaFunction("/tasks/{0}/addDependencies", "POST"));
+            Functions.Add(Function.UnlinkTaskDependencies, new AsanaFunction("/tasks/{0}/removeDependencies", "POST"));
+
+
             Functions.Add(Function.GetStoryById, new AsanaFunction("/stories/{0}", "GET"));
             Functions.Add(Function.GetProjectById, new AsanaFunction("/projects/{0}", "GET"));
             Functions.Add(Function.GetJobById, new AsanaFunction("/jobs/{0}", "GET"));
@@ -697,6 +766,14 @@ namespace AsanaNet
 
             Functions.Add(Function.DeleteTask, new AsanaFunction("/tasks/{0:ID}", "DELETE"));
             Functions.Add(Function.DeleteProject, new AsanaFunction("/projects/{0:ID}", "DELETE"));
+
+            Functions.Add(Function.AddCustomFieldToProject, new AsanaFunction("/projects/{0}/addCustomFieldSetting", "POST"));
+
+            Functions.Add(Function.AddUsersToProject, new AsanaFunction("/projects/{0}/addMembers", "POST"));
+            Functions.Add(Function.RemoveUsersFromProject, new AsanaFunction("/projects/{0}/removeMembers", "POST"));
+            Functions.Add(Function.AddFollowersToProject, new AsanaFunction("/projects/{0}/addFollowers", "POST"));
+            Functions.Add(Function.RemoveFollowerFromProject, new AsanaFunction("/projects/{0}/removeFollowers", "POST"));
+
 
 
             Associations.Add(typeof(AsanaWorkspace), new AsanaFunctionAssociation(null, GetFunction(Function.UpdateWorkspace), null));

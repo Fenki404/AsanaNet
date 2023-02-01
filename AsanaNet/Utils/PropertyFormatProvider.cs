@@ -19,12 +19,17 @@ namespace AsanaNet
 
         public string Format(string format, object arg, IFormatProvider formatProvider)
         {
+            if(arg == null)
+                throw new CustomAttributeFormatException(
+                    $"An AsanaFunction tried to format a Property ('{format}') but the ARG are null. ");
+
             if (string.IsNullOrWhiteSpace(format))
                 return arg.ToString();
 
             var pInternal = arg.GetType().GetProperty(format);
             if (pInternal == null)
-                throw new CustomAttributeFormatException(string.Format("An AsanaFunction tried to format a Property ('{0}') that couldn't be found. ", format));
+                throw new CustomAttributeFormatException(
+                    $"An AsanaFunction tried to format a Property ('{format}') that couldn't be found. ");
 
             object value = pInternal.GetValue(arg, new object[] { });
             return value.ToString();

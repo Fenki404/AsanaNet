@@ -23,10 +23,23 @@ namespace AsanaNet
             DateTime = dt;
         }
 
+        public string ToDateString()
+        {
+            return DateTime.ToString("yyyy-MM-dd");
+        }
         public override string ToString()
         {
             return DateTime.ToString("yyyy-MM-ddTHH\\:mm\\:sszzzz");
-            //return DateTime.ToString("yyyy-MM-dd");
+        }
+
+
+        public void AddHours(double hours)
+        {
+            DateTime = DateTime.AddHours(hours);
+        }
+        public void AddDays(double days)
+        {
+            DateTime = DateTime.AddDays(days);
         }
 
         public static implicit operator AsanaDateTime(DateTime dt)

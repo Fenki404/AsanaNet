@@ -14,6 +14,7 @@ namespace AsanaNet
         ReadOnly = 8,
         WriteField = 16,
         WriteNull = 32,
+        DateOnly = 64
     }
 
     [System.AttributeUsage(System.AttributeTargets.Property, AllowMultiple = false)]

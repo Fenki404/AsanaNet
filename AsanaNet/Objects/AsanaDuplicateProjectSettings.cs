@@ -1,17 +1,19 @@
 ﻿using System;
+using System.Text.RegularExpressions;
+using System.Web;
 
 namespace AsanaNet.Objects
 {
     [Serializable]
     public class AsanaDuplicateProjectSettings : AsanaObject
     {
-        [AsanaDataAttribute("name", SerializationFlags.Required)] //
+        [AsanaDataAttribute("name", SerializationFlags.Required)] 
         public string Name { get; set; }
 
-        [AsanaDataAttribute("include", SerializationFlags.Optional)] //
+        [AsanaDataAttribute("include", SerializationFlags.Optional)] 
         public string Include { get; set; }
 
-        [AsanaDataAttribute("schedule_dates", SerializationFlags.Optional)] //
+        [AsanaDataAttribute("schedule_dates", SerializationFlags.Optional)] 
         public AsanaScheduleDates ScheduleDates { get; set; }
     }
 }

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using AsanaNet.Extensions;
 using AsanaNet.Objects;
-using Microsoft.CSharp.RuntimeBinder;
 
 namespace AsanaNet
 {
@@ -113,7 +110,7 @@ namespace AsanaNet
     [Serializable]
     public class SaveAsanaTask : BaseAsanaTask
     {
-        [AsanaDataAttribute("parent", SerializationFlags.Optional)]
+        [AsanaDataAttribute("parent")]
         public string Parent { get; set; }
 
 
@@ -132,7 +129,7 @@ namespace AsanaNet
             Workspace = workspace;
             if (id == 0)
             {
-                this.SetPropertiesChanged();
+                SetPropertiesChanged();
             }
         }
 
@@ -220,7 +217,7 @@ namespace AsanaNet
         [AsanaDataAttribute("created_at", SerializationFlags.Omit)]
         public AsanaDateTime CreatedAt { get; protected set; }
 
-        [AsanaDataAttribute("completed", SerializationFlags.Optional)]
+        [AsanaDataAttribute("completed")]
         public bool? Completed { get; set; }
 
         [AsanaDataAttribute("completed_at", SerializationFlags.Omit)]
@@ -251,7 +248,7 @@ namespace AsanaNet
             }
         }
 
-        [AsanaDataAttribute("start_at", SerializationFlags.Optional)]
+        [AsanaDataAttribute("start_at")]
         public AsanaDateTime StartAt
         {
             get => _startAt;
@@ -280,7 +277,7 @@ namespace AsanaNet
             set => _dueOn = value;
         }
 
-        [AsanaDataAttribute("due_at", SerializationFlags.Optional)]
+        [AsanaDataAttribute("due_at")]
         public AsanaDateTime DueAt
         {
             get => _dueAt;
@@ -313,10 +310,10 @@ namespace AsanaNet
         }
 
 
-        [AsanaDataAttribute("dependents", SerializationFlags.Optional)]
+        [AsanaDataAttribute("dependents")]
         public AsanaDependent[] Dependents { get; set; }
 
-        [AsanaDataAttribute("dependencies", SerializationFlags.Optional)]
+        [AsanaDataAttribute("dependencies")]
         public AsanaDependent[] Dependencies { get; set; }
 
 
@@ -326,7 +323,7 @@ namespace AsanaNet
         [AsanaDataAttribute("modified_at", SerializationFlags.ReadOnly)]
         public AsanaDateTime ModifiedAt { get; protected set; }
 
-        [AsanaDataAttribute("notes", SerializationFlags.Optional)]
+        [AsanaDataAttribute("notes")]
         public string Notes { get; set; }
 
         //[AsanaDataAttribute("parent", SerializationFlags.Optional)]
@@ -342,7 +339,7 @@ namespace AsanaNet
         public AsanaWorkspace Workspace { get; protected set; }
 
 
-        [AsanaDataAttribute("custom_fields", SerializationFlags.Optional)]
+        [AsanaDataAttribute("custom_fields")]
         public AsanaCustomField[] CustomFields { get; set; }
 
         // ------------------------------------------------------
@@ -404,7 +401,7 @@ namespace AsanaNet
             Dictionary<string, object> project = new Dictionary<string, object>();
             project.Add("project", proj.ID);
             AsanaResponseEventHandler savedCallback = null;
-            savedCallback = (s) =>
+            savedCallback = s =>
             {
                 // add it manually
                 if (Projects == null)
@@ -435,7 +432,7 @@ namespace AsanaNet
             Dictionary<string, object> project = new Dictionary<string, object>();
             project.Add("project", proj.ID);
             AsanaResponseEventHandler savedCallback = null;
-            savedCallback = (s) =>
+            savedCallback = s =>
             {
                 // add it manually
                 int index = Array.IndexOf(Projects, proj);
@@ -499,7 +496,7 @@ namespace AsanaNet
         {
             var data = new Dictionary<string, object> { { "tag", tag.ID.ToString() } };
 
-            return host.SaveAsync<AsanaTask>(this as AsanaTask, host.AsanaFunction.GetFunction(Function.AddTagToTask), data);
+            return host.SaveAsync(this as AsanaTask, host.AsanaFunction.GetFunction(Function.AddTagToTask), data);
         }
 
 
@@ -514,7 +511,7 @@ namespace AsanaNet
             Dictionary<string, object> Tag = new Dictionary<string, object>();
             Tag.Add("tag", proj.ID);
             AsanaResponseEventHandler savedCallback = null;
-            savedCallback = (s) =>
+            savedCallback = s =>
             {
                 // add it manually
                 int index = Array.IndexOf(Tags, proj);
@@ -570,7 +567,7 @@ namespace AsanaNet
             CheckHostAndKey();
 
             var result = await Host.GetTaskDependentsAsync(this as AsanaTask);
-            this.Dependents = result.ToArray();
+            Dependents = result.ToArray();
             return result.ToList();
         }
         public async Task<List<AsanaDependent>> GetDependentsAsync(Asana host)
@@ -578,7 +575,7 @@ namespace AsanaNet
             CheckHostAndKey();
 
             var result = await host.GetTaskDependentsAsync(this as AsanaTask);
-            this.Dependents = result.ToArray();
+            Dependents = result.ToArray();
             return result.ToList();
         }        
 
@@ -587,7 +584,7 @@ namespace AsanaNet
             CheckHostAndKey();
 
             var result = await Host.GetTaskDependenciesAsync(this as AsanaTask);
-            this.Dependencies = result.ToArray();
+            Dependencies = result.ToArray();
             return result.ToList();
         }
         public async Task<List<AsanaDependent>> GetDependenciesAsync(Asana host)
@@ -595,7 +592,7 @@ namespace AsanaNet
             CheckHostAndKey();
 
             var result = await host.GetTaskDependenciesAsync(this as AsanaTask);
-            this.Dependencies = result.ToArray();
+            Dependencies = result.ToArray();
             return result.ToList();
         }
 
@@ -720,7 +717,7 @@ namespace AsanaNet
             { "insert_before", before },
             };
 
-            var result = await host.SaveAsync<AsanaTask>(this as AsanaTask, host.AsanaFunction.GetFunction(Function.TaskSetParent), data);
+            var result = await host.SaveAsync(this as AsanaTask, host.AsanaFunction.GetFunction(Function.TaskSetParent), data);
             return result;
         }
 
@@ -738,7 +735,7 @@ namespace AsanaNet
             if (!newValues.Any() && !CustomFields.Any())
                 return this as AsanaTask;
 
-            foreach (var customField in this.CustomFields)
+            foreach (var customField in CustomFields)
             {
                 var updateValue = newValues.FirstOrDefault(x => x.ID == customField.ID);
                 if (updateValue == null)
@@ -757,7 +754,7 @@ namespace AsanaNet
                 CustomFields = existing.ToArray();
             }
 
-            SetPropertyChanged(nameof(this.CustomFields));
+            SetPropertyChanged(nameof(CustomFields));
             var response = await this.SaveAsync<AsanaTask>(host);
             return response;
         }

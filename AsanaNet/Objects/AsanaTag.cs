@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace AsanaNet
 {
     [Serializable]
     public class AsanaTag : AsanaObject, IAsanaData
     {
-        [AsanaDataAttribute     ("notes",       SerializationFlags.Optional)]
+        [AsanaDataAttribute     ("notes")]
         public string           Notes           { get; set; }
 
         [AsanaDataAttribute     ("name",        SerializationFlags.Required)]

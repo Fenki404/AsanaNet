@@ -32,7 +32,7 @@ namespace AsanaNet.Extensions
             }
         }
 
-        public static JToken RemoveFromLowestPossibleParent(this JToken node)
+        private static JToken RemoveFromLowestPossibleParent(this JToken node)
         {
             if (node == null)
                 return null;

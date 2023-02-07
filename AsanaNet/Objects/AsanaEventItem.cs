@@ -22,7 +22,7 @@ namespace AsanaNet
         [Serializable]
         public class AsanaEventItem : AsanaObject, IAsanaData
         {
-            [AsanaDataAttribute("user", SerializationFlags.Optional)]
+            [AsanaDataAttribute("user")]
             public AsanaUser User { get; private set; }
         
             [AsanaDataAttribute("created_at", SerializationFlags.Omit)]

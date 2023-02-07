@@ -5,16 +5,16 @@ namespace AsanaNet.Objects
     [Serializable]
     public class EnumValue : AsanaObject, IAsanaData
     {
-        [AsanaData("resource_type", SerializationFlags.Optional)]
+        [AsanaData("resource_type")]
         public string ResourceType { get; private set; }
 
         [AsanaData("name", SerializationFlags.Required)]
         public string Name { get; set; }
 
-        [AsanaData("color", SerializationFlags.Optional)]
+        [AsanaData("color")]
         public string Color { get; set; }
 
-        [AsanaData("enabled", SerializationFlags.Optional)]
+        [AsanaData("enabled")]
         public bool Enabled { get; set; }
 
 

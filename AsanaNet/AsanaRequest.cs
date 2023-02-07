@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Net;
 using System.IO;
+using System.Net;
 using System.Security.Authentication;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AsanaNet.Extensions;
 using AsanaNet.Objects;
-using AsanaNet.Services;
-using MiniJSON;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -43,9 +38,9 @@ namespace AsanaNet
         /// <summary>
         /// Static because all Asana requests will have a common throttle
         /// </summary>
-        private static bool _throttling = false;
+        private static bool _throttling;
         private static ManualResetEvent _throttlingWaitHandle = new ManualResetEvent(false);
-        public static readonly Encoding Encoding = Encoding.GetEncoding(65001);
+        private static readonly Encoding Encoding = Encoding.GetEncoding(65001);
 
         #endregion
 
@@ -94,12 +89,12 @@ namespace AsanaNet
             if (_throttling)
                 _throttlingWaitHandle.WaitOne();
 
-            return Task.Factory.FromAsync<WebResponse>(
+            return Task.Factory.FromAsync(
                     _request.BeginGetResponse,
                     _request.EndGetResponse,
-                    null).ContinueWith((requestTask) =>
+                    null).ContinueWith(requestTask =>
                    {
-                       HttpWebRequest request = (HttpWebRequest)_request;
+                       HttpWebRequest request = _request;
                        AsanaRequest state = (AsanaRequest)requestTask.AsyncState;
 
                        if (requestTask.IsFaulted)
@@ -374,7 +369,7 @@ namespace AsanaNet
             var u = AsanaObject.Create(typeof(T));
             Parsing.Deserialize(GetDataAsDict(rawData), obj, _host);
 
-            return (T)obj;
+            return obj;
         }
 
         /// <summary>
@@ -530,7 +525,7 @@ namespace AsanaNet
             {
                 url += "?";
                 foreach (var kv in args)
-                    url += kv.Key.ToString() + "=" + Uri.EscapeUriString(kv.Value.ToString()) + "&";
+                    url += kv.Key + "=" + Uri.EscapeUriString(kv.Value.ToString()) + "&";
                 url = url.TrimEnd('&');
             }
 

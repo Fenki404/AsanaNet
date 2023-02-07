@@ -9,13 +9,13 @@ namespace AsanaNet.Objects
         [AsanaData("name", SerializationFlags.Required)] 
         public string Name { get; set; }
 
-        [AsanaData("include", SerializationFlags.Optional)] 
+        [AsanaData("include")] 
         public string[] Include { get; set; }
 
 
         public static AsanaDuplicateTaskSettings GetDefault(string name)
         {
-            return new AsanaDuplicateTaskSettings()
+            return new AsanaDuplicateTaskSettings
             {
                 Name = name,
                 Include = new[]

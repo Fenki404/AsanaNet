@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Globalization;
 using System.Reflection;
 
@@ -13,8 +10,7 @@ namespace AsanaNet
         {
             if (formatType == typeof(ICustomFormatter))
                 return this;
-            else
-                return null;
+            return null;
         }
 
         public string Format(string format, object arg, IFormatProvider formatProvider)
@@ -39,10 +35,9 @@ namespace AsanaNet
         {
             if (arg is IFormattable)
                 return ((IFormattable)arg).ToString(format, CultureInfo.CurrentCulture);
-            else if (arg != null)
+            if (arg != null)
                 return arg.ToString();
-            else
-                return String.Empty;
+            return String.Empty;
         }
     }
 }

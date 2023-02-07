@@ -1,25 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Dynamic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Net;
-using System.Web;
-using System.Threading;
-using System.IO;
-using System.Net.Http;
-using System.Xml;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using AsanaNet.Extensions;
 using AsanaNet.Interfaces;
 using AsanaNet.Objects;
-using AsanaNet.Services;
-using MiniJSON;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace AsanaNet
@@ -112,7 +99,7 @@ namespace AsanaNet
         public void SetApiKey(string key)
         {
             APIKey = key;
-            EncodedAPIKey = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(key + ":"));
+            EncodedAPIKey = Convert.ToBase64String(Encoding.ASCII.GetBytes(key + ":"));
             //_restClient = new RestClient(EncodedAPIKey);
         }
 
@@ -337,7 +324,7 @@ namespace AsanaNet
             var request = GetBaseRequestWithParamsJson(func, data, obj);
             LastPayload = request.LastPayload;
 
-            return request.GoAsync<T>(obj);
+            return request.GoAsync(obj);
         }
 
         /// <summary>
@@ -401,7 +388,7 @@ namespace AsanaNet
             else
                 throw new Exception("Object is local, cannot delete.");
 
-            if (Object.ReferenceEquals(func, null)) throw new NotImplementedException("This object cannot delete itself.");
+            if (ReferenceEquals(func, null)) throw new NotImplementedException("This object cannot delete itself.");
 
             request = GetBaseRequest(func, obj);
             return request.GoAsync(obj);

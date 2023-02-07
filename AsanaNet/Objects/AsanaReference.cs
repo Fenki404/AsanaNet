@@ -5,7 +5,7 @@ namespace AsanaNet.Objects
     [Serializable]
     public class AsanaReference : AsanaObject, IAsanaData
     {
-        [AsanaData("resource_type", SerializationFlags.Optional)]
+        [AsanaData("resource_type")]
         public string ResourceType { get; private set; }
 
         [AsanaData("name", SerializationFlags.Required)]

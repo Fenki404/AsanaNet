@@ -7,17 +7,17 @@ namespace AsanaNet.Objects
     [Serializable]
     public class AsanaCustomField : AsanaObject, IAsanaData, IEquatable<AsanaCustomField>
     {
-        [AsanaData("resource_type", SerializationFlags.Optional)]
+        [AsanaData("resource_type")]
         public string ResourceType { get; private set; }
         
-        [AsanaData("created_by", SerializationFlags.Optional)]
+        [AsanaData("created_by")]
         public AsanaUser CreatedBy { get; set; }
 
 
         [AsanaData("name", SerializationFlags.Required)]
         public string Name { get; set; }
 
-        [AsanaData("enabled", SerializationFlags.Optional)]
+        [AsanaData("enabled")]
         public bool Enabled { get; set; }
 
         [AsanaData("has_notifications_enabled", SerializationFlags.Optional | SerializationFlags.ReadOnly)]
@@ -29,10 +29,10 @@ namespace AsanaNet.Objects
         [AsanaData("format", SerializationFlags.Optional | SerializationFlags.ReadOnly)]
         public string Format { get; set; }
 
-        [AsanaData("number_value", SerializationFlags.Optional)]
+        [AsanaData("number_value")]
         public int NumberValue { get; set; }
 
-        [AsanaData("precision", SerializationFlags.Optional)]
+        [AsanaData("precision")]
         public int Precision { get; set; }
 
 
@@ -42,34 +42,34 @@ namespace AsanaNet.Objects
         [AsanaData("custom_label", SerializationFlags.Optional | SerializationFlags.ReadOnly)]
         public string CustomLabel { get; set; }
 
-        [AsanaData("text_value", SerializationFlags.Optional)]
+        [AsanaData("text_value")]
         public string TextValue { get; set; }
 
-        [AsanaData("display_value", SerializationFlags.Optional)]
+        [AsanaData("display_value")]
         public string DisplayValue { get; set; }
 
 
-        [AsanaData("resource_subtype", SerializationFlags.Optional)]
+        [AsanaData("resource_subtype")]
         public string ResourceSubtype { get; set; }
 
 
-        [AsanaData("type", SerializationFlags.Optional)]
+        [AsanaData("type")]
         public string Type { get; set; }
 
 
-        [AsanaData("enum_options", SerializationFlags.Optional)]
+        [AsanaData("enum_options")]
         public EnumValue[] EnumOptions { get; set; }
 
-        [AsanaData("enum_value", SerializationFlags.Optional)]
+        [AsanaData("enum_value")]
         public EnumValue EnumValue { get; set; }
 
-        [AsanaData("multi_enum_values", SerializationFlags.Optional)]
+        [AsanaData("multi_enum_values")]
         public EnumValue[] MultiEnumValues { get; set; }
 
-        [AsanaData("people_value", SerializationFlags.Optional)]
+        [AsanaData("people_value")]
         public AsanaReference[] PeopleValue { get; set; }
 
-        [AsanaDataAttribute("date_value", SerializationFlags.Optional)]
+        [AsanaDataAttribute("date_value")]
         public AsanaDateTime DateValue { get; protected set; }
 
 
@@ -176,7 +176,7 @@ namespace AsanaNet.Objects
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((AsanaCustomField)obj);
         }
 

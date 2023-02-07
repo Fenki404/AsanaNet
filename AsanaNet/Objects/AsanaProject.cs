@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
 using System.Threading.Tasks;
 using AsanaNet.Objects;
 
@@ -23,7 +21,7 @@ namespace AsanaNet
         [AsanaDataAttribute("modified_at", SerializationFlags.Omit)] //
         public AsanaDateTime ModifiedAt { get; private set; }
 
-        [AsanaDataAttribute("notes", SerializationFlags.Optional)] //
+        [AsanaDataAttribute("notes")] //
         public string Notes { get; set; }
 
         [AsanaDataAttribute("archived", SerializationFlags.Omit)] //
@@ -73,7 +71,7 @@ namespace AsanaNet
         }
 
 
-        [AsanaDataAttribute("custom_fields", SerializationFlags.Optional)]
+        [AsanaDataAttribute("custom_fields")]
         public AsanaCustomField[] CustomFields { get; set; }
 
         // ------------------------------------------------------

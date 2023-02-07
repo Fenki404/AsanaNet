@@ -81,9 +81,9 @@ namespace AsanaNet.Objects
         [AsanaDataAttribute("target", SerializationFlags.Omit, "ID")]
         public AsanaSection Target { get; private set; }
 
-        [AsanaDataAttribute("insert_after", SerializationFlags.Optional)]
+        [AsanaDataAttribute("insert_after")]
         public string InsertAfter { get; set; }
-        [AsanaDataAttribute("insert_before", SerializationFlags.Optional)]
+        [AsanaDataAttribute("insert_before")]
         public string InsertBefore { get; set; }
 
         public bool IsObjectLocal => ID == 0;

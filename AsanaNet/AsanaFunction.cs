@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace AsanaNet
 {
     public partial class AsanaFunction
     {
-        private readonly Dictionary<Function, AsanaFunction> Functions = new Dictionary<Function, AsanaFunction>();
-        private readonly Dictionary<Type, AsanaFunctionAssociation> Associations = new Dictionary<Type, AsanaFunctionAssociation>();
+        private readonly Dictionary<Function, AsanaFunction> _functions = new Dictionary<Function, AsanaFunction>();
+        private readonly Dictionary<Type, AsanaFunctionAssociation> _associations = new Dictionary<Type, AsanaFunctionAssociation>();
 
         public string Url { get; private set; }
         public string Method { get; private set; }
@@ -18,31 +16,24 @@ namespace AsanaNet
         {
             
         }
-        public AsanaFunction(string url, string methd)
+        public AsanaFunction(string url, string method)
         {
             Url = url;
-            Method = methd;
+            Method = method;
         }
 
         public AsanaFunction GetFunction(Function en)
         {
-            if (!Functions.ContainsKey(en))
-            {
-                var str = "";
-                foreach (var keyValuePair in Functions)
-                {
-                    str += keyValuePair.Key.ToString();
-                }
+            if (_functions.ContainsKey(en)) return _functions[en];
 
-                throw new NotImplementedException($"GetFunction: key {en} not found, all:" + str);
-            }
+            var str = _functions.Aggregate("", (current, keyValuePair) => current + keyValuePair.Key);
+            throw new NotImplementedException($"GetFunction: key {en} not found, all:" + str);
 
-            return Functions[en];
         }
 
         public AsanaFunctionAssociation GetFunctionAssociation(Type t)
         {
-            return Associations[t];
+            return _associations[t];
         }
 
         public void AddArgs(Dictionary<string, object> args)

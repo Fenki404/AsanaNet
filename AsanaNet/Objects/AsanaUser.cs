@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace AsanaNet
 {
@@ -14,7 +12,7 @@ namespace AsanaNet
         [AsanaDataAttribute("email")]
         public string           Email           { get; private set; }
 
-        [AsanaDataAttribute("photo", SerializationFlags.Optional)]
+        [AsanaDataAttribute("photo")]
         public AsanaUserPhoto Photo { get; private set; }
 
         [AsanaDataAttribute("workspaces")]

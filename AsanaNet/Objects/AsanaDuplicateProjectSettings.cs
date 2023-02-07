@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Text.RegularExpressions;
-using System.Web;
 
 namespace AsanaNet.Objects
 {
@@ -10,10 +8,10 @@ namespace AsanaNet.Objects
         [AsanaDataAttribute("name", SerializationFlags.Required)] 
         public string Name { get; set; }
 
-        [AsanaDataAttribute("include", SerializationFlags.Optional)] 
+        [AsanaDataAttribute("include")] 
         public string Include { get; set; }
 
-        [AsanaDataAttribute("schedule_dates", SerializationFlags.Optional)] 
+        [AsanaDataAttribute("schedule_dates")] 
         public AsanaScheduleDates ScheduleDates { get; set; }
     }
 }

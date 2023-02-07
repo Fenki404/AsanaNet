@@ -1,8 +1,9 @@
-﻿using AsanaNet.Objects;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AsanaNet.Objects;
+
 /*
 * THIS FILE IS GENERATED! DO NOT EDIT!
 * REFER TO AsanaFunctionDefinitions.xml
@@ -694,97 +695,97 @@ namespace AsanaNet
     {
         internal void InitFunctions()
         {
-            if (Functions.Any() || Associations.Any())
+            if (_functions.Any() || _associations.Any())
                 return;
 
-            Functions.Add(Function.GetUsers, new AsanaFunction("/users", "GET"));
-            Functions.Add(Function.GetMe, new AsanaFunction("/users/me", "GET"));
-            Functions.Add(Function.GetUserById, new AsanaFunction("/users/{0}", "GET"));
-            Functions.Add(Function.GetWorkspaces, new AsanaFunction("/workspaces", "GET"));
-            Functions.Add(Function.GetWorkspaceById, new AsanaFunction("/workspaces/{0}", "GET"));
-            Functions.Add(Function.GetUsersInWorkspace, new AsanaFunction("/workspaces/{0:ID}/users", "GET"));
-            Functions.Add(Function.GetTasksInWorkspace, new AsanaFunction("/workspaces/{0:ID}/tasks?assignee={1:ID}", "GET"));
-            Functions.Add(Function.GetTasksBySearch, new AsanaFunction("/workspaces/{0:ID}/tasks/search", "GET"));
-            Functions.Add(Function.GetProjectsInWorkspace, new AsanaFunction("/workspaces/{0:ID}/projects", "GET"));
-            Functions.Add(Function.GetTagsInWorkspace, new AsanaFunction("/workspaces/{0:ID}/tags", "GET"));
+            _functions.Add(Function.GetUsers, new AsanaFunction("/users", "GET"));
+            _functions.Add(Function.GetMe, new AsanaFunction("/users/me", "GET"));
+            _functions.Add(Function.GetUserById, new AsanaFunction("/users/{0}", "GET"));
+            _functions.Add(Function.GetWorkspaces, new AsanaFunction("/workspaces", "GET"));
+            _functions.Add(Function.GetWorkspaceById, new AsanaFunction("/workspaces/{0}", "GET"));
+            _functions.Add(Function.GetUsersInWorkspace, new AsanaFunction("/workspaces/{0:ID}/users", "GET"));
+            _functions.Add(Function.GetTasksInWorkspace, new AsanaFunction("/workspaces/{0:ID}/tasks?assignee={1:ID}", "GET"));
+            _functions.Add(Function.GetTasksBySearch, new AsanaFunction("/workspaces/{0:ID}/tasks/search", "GET"));
+            _functions.Add(Function.GetProjectsInWorkspace, new AsanaFunction("/workspaces/{0:ID}/projects", "GET"));
+            _functions.Add(Function.GetTagsInWorkspace, new AsanaFunction("/workspaces/{0:ID}/tags", "GET"));
 
-            Functions.Add(Function.GetSection, new AsanaFunction("/sections/{0}", "GET"));
-            Functions.Add(Function.GetSectionsInAProject, new AsanaFunction("/projects/{0}/sections", "GET"));
-            Functions.Add(Function.CreateSectionInAProject, new AsanaFunction("/projects/{0:Target}/sections", "POST"));
-            Functions.Add(Function.UpdateSection, new AsanaFunction("/sections/{0}", "PUT"));
-            Functions.Add(Function.DeleteSection, new AsanaFunction("/sections/{0}", "DELETE"));
+            _functions.Add(Function.GetSection, new AsanaFunction("/sections/{0}", "GET"));
+            _functions.Add(Function.GetSectionsInAProject, new AsanaFunction("/projects/{0}/sections", "GET"));
+            _functions.Add(Function.CreateSectionInAProject, new AsanaFunction("/projects/{0:Target}/sections", "POST"));
+            _functions.Add(Function.UpdateSection, new AsanaFunction("/sections/{0}", "PUT"));
+            _functions.Add(Function.DeleteSection, new AsanaFunction("/sections/{0}", "DELETE"));
 
-            Functions.Add(Function.GetTaskById, new AsanaFunction("/tasks/{0}", "GET"));
-            Functions.Add(Function.GetStoriesInTask, new AsanaFunction("/tasks/{0:ID}/stories", "GET"));
-            Functions.Add(Function.GetProjectsOnATask, new AsanaFunction("/tasks/{0:ID}/projects", "GET"));
-            Functions.Add(Function.GetTasksInAProject, new AsanaFunction("/projects/{0:ID}/tasks", "GET"));
-            Functions.Add(Function.GetTasksInASection, new AsanaFunction("/sections/{0:ID}/tasks", "GET"));
-            Functions.Add(Function.GetSubTasksInATask, new AsanaFunction("/tasks/{0:ID}/subtasks", "GET"));
-            Functions.Add(Function.GetDependenciesTasks, new AsanaFunction("/tasks/{0:ID}/dependencies", "GET"));
-            Functions.Add(Function.GetEventsInTask, new AsanaFunction("/tasks/{0:ID}/events?sync={1}", "GET"));
+            _functions.Add(Function.GetTaskById, new AsanaFunction("/tasks/{0}", "GET"));
+            _functions.Add(Function.GetStoriesInTask, new AsanaFunction("/tasks/{0:ID}/stories", "GET"));
+            _functions.Add(Function.GetProjectsOnATask, new AsanaFunction("/tasks/{0:ID}/projects", "GET"));
+            _functions.Add(Function.GetTasksInAProject, new AsanaFunction("/projects/{0:ID}/tasks", "GET"));
+            _functions.Add(Function.GetTasksInASection, new AsanaFunction("/sections/{0:ID}/tasks", "GET"));
+            _functions.Add(Function.GetSubTasksInATask, new AsanaFunction("/tasks/{0:ID}/subtasks", "GET"));
+            _functions.Add(Function.GetDependenciesTasks, new AsanaFunction("/tasks/{0:ID}/dependencies", "GET"));
+            _functions.Add(Function.GetEventsInTask, new AsanaFunction("/tasks/{0:ID}/events?sync={1}", "GET"));
 
-            Functions.Add(Function.TaskSetParent, new AsanaFunction("/tasks/{0}/setParent", "POST"));
-            Functions.Add(Function.AddSubTaskToTask, new AsanaFunction("/tasks/{0:ID}/subtasks", "POST"));
-            Functions.Add(Function.CreateWorkspaceTask, new AsanaFunction("/tasks", "POST"));
-            Functions.Add(Function.AddTaskToSection, new AsanaFunction("/sections/{0:Target}/addTask", "POST"));
-            Functions.Add(Function.AddProjectToTask, new AsanaFunction("/tasks/{0:ID}/addProject", "POST"));
-            Functions.Add(Function.RemoveProjectFromTask, new AsanaFunction("/tasks/{0:ID}/removeProject", "POST"));
-            Functions.Add(Function.AddStoryToTask, new AsanaFunction("/tasks/{0:Target}/stories", "POST"));
-            Functions.Add(Function.AddTagToTask, new AsanaFunction("/tasks/{0:ID}/addTag", "POST"));
-            Functions.Add(Function.RemoveTagFromTask, new AsanaFunction("/tasks/{0:ID}/removeTag", "POST"));
-            Functions.Add(Function.AddFollowersToTask, new AsanaFunction("/tasks/{0:ID}/addFollowers", "POST"));
-            Functions.Add(Function.RemoveFollowersFromTask, new AsanaFunction("/tasks/{0:ID}/removeFollowers", "POST"));
-            Functions.Add(Function.GetTasksByTag, new AsanaFunction("/tags/{0:ID}/tasks", "GET"));
-            Functions.Add(Function.DuplicateTask, new AsanaFunction("/tasks/{0}/duplicate", "POST"));
-            Functions.Add(Function.GetTaskDependents, new AsanaFunction("/tasks/{0}/dependents", "GET"));
-            Functions.Add(Function.SetTaskDependents, new AsanaFunction("/tasks/{0}/addDependents", "POST"));
-            Functions.Add(Function.UnlinkTaskDependents, new AsanaFunction("/tasks/{0}/removeDependents", "POST"));
-            Functions.Add(Function.GetTaskDependencies, new AsanaFunction("/tasks/{0}/dependencies", "GET"));
-            Functions.Add(Function.SetTaskDependencies, new AsanaFunction("/tasks/{0}/addDependencies", "POST"));
-            Functions.Add(Function.UnlinkTaskDependencies, new AsanaFunction("/tasks/{0}/removeDependencies", "POST"));
-
-
-            Functions.Add(Function.GetStoryById, new AsanaFunction("/stories/{0}", "GET"));
-            Functions.Add(Function.GetProjectById, new AsanaFunction("/projects/{0}", "GET"));
-            Functions.Add(Function.GetJobById, new AsanaFunction("/jobs/{0}", "GET"));
-            Functions.Add(Function.GetTeamById, new AsanaFunction("/teams/{0}", "GET"));
+            _functions.Add(Function.TaskSetParent, new AsanaFunction("/tasks/{0}/setParent", "POST"));
+            _functions.Add(Function.AddSubTaskToTask, new AsanaFunction("/tasks/{0:ID}/subtasks", "POST"));
+            _functions.Add(Function.CreateWorkspaceTask, new AsanaFunction("/tasks", "POST"));
+            _functions.Add(Function.AddTaskToSection, new AsanaFunction("/sections/{0:Target}/addTask", "POST"));
+            _functions.Add(Function.AddProjectToTask, new AsanaFunction("/tasks/{0:ID}/addProject", "POST"));
+            _functions.Add(Function.RemoveProjectFromTask, new AsanaFunction("/tasks/{0:ID}/removeProject", "POST"));
+            _functions.Add(Function.AddStoryToTask, new AsanaFunction("/tasks/{0:Target}/stories", "POST"));
+            _functions.Add(Function.AddTagToTask, new AsanaFunction("/tasks/{0:ID}/addTag", "POST"));
+            _functions.Add(Function.RemoveTagFromTask, new AsanaFunction("/tasks/{0:ID}/removeTag", "POST"));
+            _functions.Add(Function.AddFollowersToTask, new AsanaFunction("/tasks/{0:ID}/addFollowers", "POST"));
+            _functions.Add(Function.RemoveFollowersFromTask, new AsanaFunction("/tasks/{0:ID}/removeFollowers", "POST"));
+            _functions.Add(Function.GetTasksByTag, new AsanaFunction("/tags/{0:ID}/tasks", "GET"));
+            _functions.Add(Function.DuplicateTask, new AsanaFunction("/tasks/{0}/duplicate", "POST"));
+            _functions.Add(Function.GetTaskDependents, new AsanaFunction("/tasks/{0}/dependents", "GET"));
+            _functions.Add(Function.SetTaskDependents, new AsanaFunction("/tasks/{0}/addDependents", "POST"));
+            _functions.Add(Function.UnlinkTaskDependents, new AsanaFunction("/tasks/{0}/removeDependents", "POST"));
+            _functions.Add(Function.GetTaskDependencies, new AsanaFunction("/tasks/{0}/dependencies", "GET"));
+            _functions.Add(Function.SetTaskDependencies, new AsanaFunction("/tasks/{0}/addDependencies", "POST"));
+            _functions.Add(Function.UnlinkTaskDependencies, new AsanaFunction("/tasks/{0}/removeDependencies", "POST"));
 
 
-            Functions.Add(Function.GetTagById, new AsanaFunction("/tags/{0}", "GET"));
-            Functions.Add(Function.GetTeamsInWorkspace, new AsanaFunction("/organizations/{0:ID}/teams", "GET"));
-            Functions.Add(Function.GetProjectsInTeam, new AsanaFunction("/teams/{0:ID}/projects", "GET"));
-            Functions.Add(Function.GetEventsInAProject, new AsanaFunction("/projects/{0:ID}/events?sync={1}", "GET"));
-
-            Functions.Add(Function.DuplicateProject, new AsanaFunction("/projects/{0}/duplicate", "POST"));
-            Functions.Add(Function.CreateWorkspaceProject, new AsanaFunction("/projects", "POST"));
-            Functions.Add(Function.CreateWorkspaceTag, new AsanaFunction("/tags", "POST"));
-
-            Functions.Add(Function.UpdateTask, new AsanaFunction("/tasks/{0:ID}", "PUT"));
-            Functions.Add(Function.UpdateTag, new AsanaFunction("/tags/{0:ID}", "PUT"));
-            Functions.Add(Function.UpdateProject, new AsanaFunction("/projects/{0:ID}", "PUT"));
-            Functions.Add(Function.UpdateWorkspace, new AsanaFunction("/workspaces/{0:ID}", "PUT"));
-
-            Functions.Add(Function.DeleteTask, new AsanaFunction("/tasks/{0:ID}", "DELETE"));
-            Functions.Add(Function.DeleteProject, new AsanaFunction("/projects/{0:ID}", "DELETE"));
-
-            Functions.Add(Function.AddCustomFieldToProject, new AsanaFunction("/projects/{0}/addCustomFieldSetting", "POST"));
-
-            Functions.Add(Function.AddUsersToProject, new AsanaFunction("/projects/{0}/addMembers", "POST"));
-            Functions.Add(Function.RemoveUsersFromProject, new AsanaFunction("/projects/{0}/removeMembers", "POST"));
-            Functions.Add(Function.AddFollowersToProject, new AsanaFunction("/projects/{0}/addFollowers", "POST"));
-            Functions.Add(Function.RemoveFollowerFromProject, new AsanaFunction("/projects/{0}/removeFollowers", "POST"));
+            _functions.Add(Function.GetStoryById, new AsanaFunction("/stories/{0}", "GET"));
+            _functions.Add(Function.GetProjectById, new AsanaFunction("/projects/{0}", "GET"));
+            _functions.Add(Function.GetJobById, new AsanaFunction("/jobs/{0}", "GET"));
+            _functions.Add(Function.GetTeamById, new AsanaFunction("/teams/{0}", "GET"));
 
 
+            _functions.Add(Function.GetTagById, new AsanaFunction("/tags/{0}", "GET"));
+            _functions.Add(Function.GetTeamsInWorkspace, new AsanaFunction("/organizations/{0:ID}/teams", "GET"));
+            _functions.Add(Function.GetProjectsInTeam, new AsanaFunction("/teams/{0:ID}/projects", "GET"));
+            _functions.Add(Function.GetEventsInAProject, new AsanaFunction("/projects/{0:ID}/events?sync={1}", "GET"));
 
-            Associations.Add(typeof(AsanaWorkspace), new AsanaFunctionAssociation(null, GetFunction(Function.UpdateWorkspace), null));
-            Associations.Add(typeof(AsanaSection), new AsanaFunctionAssociation(GetFunction(Function.CreateSectionInAProject), GetFunction(Function.UpdateSection), GetFunction(Function.DeleteSection)));
-            Associations.Add(typeof(AsanaSectionTask), new AsanaFunctionAssociation(GetFunction(Function.AddTaskToSection), null, null));
+            _functions.Add(Function.DuplicateProject, new AsanaFunction("/projects/{0}/duplicate", "POST"));
+            _functions.Add(Function.CreateWorkspaceProject, new AsanaFunction("/projects", "POST"));
+            _functions.Add(Function.CreateWorkspaceTag, new AsanaFunction("/tags", "POST"));
 
-            Associations.Add(typeof(AsanaTask), new AsanaFunctionAssociation(GetFunction(Function.CreateWorkspaceTask), GetFunction(Function.UpdateTask), GetFunction(Function.DeleteTask)));
-            Associations.Add(typeof(SaveAsanaTask), new AsanaFunctionAssociation(GetFunction(Function.CreateWorkspaceTask), GetFunction(Function.UpdateTask), GetFunction(Function.DeleteTask)));
-            Associations.Add(typeof(AsanaProject), new AsanaFunctionAssociation(GetFunction(Function.CreateWorkspaceProject), GetFunction(Function.UpdateProject), GetFunction(Function.DeleteProject)));
-            Associations.Add(typeof(AsanaTag), new AsanaFunctionAssociation(GetFunction(Function.CreateWorkspaceTag), GetFunction(Function.UpdateTag), null));
-            Associations.Add(typeof(AsanaStory), new AsanaFunctionAssociation(GetFunction(Function.AddStoryToTask), null, null));
+            _functions.Add(Function.UpdateTask, new AsanaFunction("/tasks/{0:ID}", "PUT"));
+            _functions.Add(Function.UpdateTag, new AsanaFunction("/tags/{0:ID}", "PUT"));
+            _functions.Add(Function.UpdateProject, new AsanaFunction("/projects/{0:ID}", "PUT"));
+            _functions.Add(Function.UpdateWorkspace, new AsanaFunction("/workspaces/{0:ID}", "PUT"));
+
+            _functions.Add(Function.DeleteTask, new AsanaFunction("/tasks/{0:ID}", "DELETE"));
+            _functions.Add(Function.DeleteProject, new AsanaFunction("/projects/{0:ID}", "DELETE"));
+
+            _functions.Add(Function.AddCustomFieldToProject, new AsanaFunction("/projects/{0}/addCustomFieldSetting", "POST"));
+
+            _functions.Add(Function.AddUsersToProject, new AsanaFunction("/projects/{0}/addMembers", "POST"));
+            _functions.Add(Function.RemoveUsersFromProject, new AsanaFunction("/projects/{0}/removeMembers", "POST"));
+            _functions.Add(Function.AddFollowersToProject, new AsanaFunction("/projects/{0}/addFollowers", "POST"));
+            _functions.Add(Function.RemoveFollowerFromProject, new AsanaFunction("/projects/{0}/removeFollowers", "POST"));
+
+
+
+            _associations.Add(typeof(AsanaWorkspace), new AsanaFunctionAssociation(null, GetFunction(Function.UpdateWorkspace), null));
+            _associations.Add(typeof(AsanaSection), new AsanaFunctionAssociation(GetFunction(Function.CreateSectionInAProject), GetFunction(Function.UpdateSection), GetFunction(Function.DeleteSection)));
+            _associations.Add(typeof(AsanaSectionTask), new AsanaFunctionAssociation(GetFunction(Function.AddTaskToSection), null, null));
+
+            _associations.Add(typeof(AsanaTask), new AsanaFunctionAssociation(GetFunction(Function.CreateWorkspaceTask), GetFunction(Function.UpdateTask), GetFunction(Function.DeleteTask)));
+            _associations.Add(typeof(SaveAsanaTask), new AsanaFunctionAssociation(GetFunction(Function.CreateWorkspaceTask), GetFunction(Function.UpdateTask), GetFunction(Function.DeleteTask)));
+            _associations.Add(typeof(AsanaProject), new AsanaFunctionAssociation(GetFunction(Function.CreateWorkspaceProject), GetFunction(Function.UpdateProject), GetFunction(Function.DeleteProject)));
+            _associations.Add(typeof(AsanaTag), new AsanaFunctionAssociation(GetFunction(Function.CreateWorkspaceTag), GetFunction(Function.UpdateTag), null));
+            _associations.Add(typeof(AsanaStory), new AsanaFunctionAssociation(GetFunction(Function.AddStoryToTask), null, null));
 
         }
     }

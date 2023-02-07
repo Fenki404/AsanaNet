@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AsanaNet.Services
 {
-    public partial class Utils
+    public class Utils
     {
         public static string AddQueryString(string uri, IDictionary<string, string> queryString)
         {

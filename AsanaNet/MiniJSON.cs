@@ -26,6 +26,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -111,7 +112,7 @@ namespace MiniJSON
                 TRUE,
                 FALSE,
                 NULL
-            };
+            }
 
             StringReader json;
 
@@ -237,25 +238,23 @@ namespace MiniJSON
                 }
             }
 
-            string ParseString()
+            private string ParseString()
             {
-                StringBuilder s = new StringBuilder();
-                char c;
+                var stringBuilder = new StringBuilder();
 
                 // ditch opening quote
                 json.Read();
 
-                bool parsing = true;
+                var parsing = true;
                 while (parsing)
                 {
 
                     if (json.Peek() == -1)
                     {
-                        parsing = false;
                         break;
                     }
 
-                    c = NextChar;
+                    var c = NextChar;
                     switch (c)
                     {
                         case '"':
@@ -274,22 +273,22 @@ namespace MiniJSON
                                 case '"':
                                 case '\\':
                                 case '/':
-                                    s.Append(c);
+                                    stringBuilder.Append(c);
                                     break;
                                 case 'b':
-                                    s.Append('\b');
+                                    stringBuilder.Append('\b');
                                     break;
                                 case 'f':
-                                    s.Append('\f');
+                                    stringBuilder.Append('\f');
                                     break;
                                 case 'n':
-                                    s.Append('\n');
+                                    stringBuilder.Append('\n');
                                     break;
                                 case 'r':
-                                    s.Append('\r');
+                                    stringBuilder.Append('\r');
                                     break;
                                 case 't':
-                                    s.Append('\t');
+                                    stringBuilder.Append('\t');
                                     break;
                                 case 'u':
                                     var hex = new StringBuilder();
@@ -299,17 +298,17 @@ namespace MiniJSON
                                         hex.Append(NextChar);
                                     }
 
-                                    s.Append((char)Convert.ToInt32(hex.ToString(), 16));
+                                    stringBuilder.Append((char)Convert.ToInt32(hex.ToString(), 16));
                                     break;
                             }
                             break;
                         default:
-                            s.Append(c);
+                            stringBuilder.Append(c);
                             break;
                     }
                 }
 
-                return s.ToString();
+                return stringBuilder.ToString();
             }
 
             object ParseNumber()
@@ -442,7 +441,7 @@ namespace MiniJSON
         /// <summary>
         /// Converts a IDictionary / IList object or a simple type (string, int, etc.) into a JSON string
         /// </summary>
-        /// <param name="json">A Dictionary&lt;string, object&gt; / List&lt;object&gt;</param>
+        /// <param name="obj"></param>
         /// <returns>A JSON encoded string, or null if object 'json' is not serializable</returns>
         public static string Serialize(object obj)
         {
@@ -451,11 +450,11 @@ namespace MiniJSON
 
         sealed class Serializer
         {
-            StringBuilder builder;
+            private readonly StringBuilder _builder;
 
-            Serializer()
+            private Serializer()
             {
-                builder = new StringBuilder();
+                _builder = new StringBuilder();
             }
 
             public static string Serialize(object obj)
@@ -464,7 +463,7 @@ namespace MiniJSON
 
                 instance.SerializeValue(obj);
 
-                return instance.builder.ToString();
+                return instance._builder.ToString();
             }
 
             void SerializeValue(object value)
@@ -475,7 +474,7 @@ namespace MiniJSON
 
                 if (value == null)
                 {
-                    builder.Append("null");
+                    _builder.Append("null");
                 }
                 else if ((asStr = value as string) != null)
                 {
@@ -483,7 +482,7 @@ namespace MiniJSON
                 }
                 else if (value is bool)
                 {
-                    builder.Append(value.ToString().ToLower());
+                    _builder.Append(value.ToString().ToLower());
                 }
                 else if ((asList = value as IList) != null)
                 {
@@ -507,29 +506,29 @@ namespace MiniJSON
             {
                 bool first = true;
 
-                builder.Append('{');
+                _builder.Append('{');
 
                 foreach (object e in obj.Keys)
                 {
                     if (!first)
                     {
-                        builder.Append(',');
+                        _builder.Append(',');
                     }
 
                     SerializeString(e.ToString());
-                    builder.Append(':');
+                    _builder.Append(':');
 
                     SerializeValue(obj[e]);
 
                     first = false;
                 }
 
-                builder.Append('}');
+                _builder.Append('}');
             }
 
             void SerializeArray(IList anArray)
             {
-                builder.Append('[');
+                _builder.Append('[');
 
                 bool first = true;
 
@@ -537,7 +536,7 @@ namespace MiniJSON
                 {
                     if (!first)
                     {
-                        builder.Append(',');
+                        _builder.Append(',');
                     }
 
                     SerializeValue(obj);
@@ -545,12 +544,12 @@ namespace MiniJSON
                     first = false;
                 }
 
-                builder.Append(']');
+                _builder.Append(']');
             }
 
             void SerializeString(string str)
             {
-                builder.Append('\"');
+                _builder.Append('\"');
 
                 char[] charArray = str.ToCharArray();
                 foreach (var c in charArray)
@@ -558,41 +557,41 @@ namespace MiniJSON
                     switch (c)
                     {
                         case '"':
-                            builder.Append("\\\"");
+                            _builder.Append("\\\"");
                             break;
                         case '\\':
-                            builder.Append("\\\\");
+                            _builder.Append("\\\\");
                             break;
                         case '\b':
-                            builder.Append("\\b");
+                            _builder.Append("\\b");
                             break;
                         case '\f':
-                            builder.Append("\\f");
+                            _builder.Append("\\f");
                             break;
                         case '\n':
-                            builder.Append("\\n");
+                            _builder.Append("\\n");
                             break;
                         case '\r':
-                            builder.Append("\\r");
+                            _builder.Append("\\r");
                             break;
                         case '\t':
-                            builder.Append("\\t");
+                            _builder.Append("\\t");
                             break;
                         default:
                             int codepoint = Convert.ToInt32(c);
                             if ((codepoint >= 32) && (codepoint <= 126))
                             {
-                                builder.Append(c);
+                                _builder.Append(c);
                             }
                             else
                             {
-                                builder.Append("\\u" + Convert.ToString(codepoint, 16).PadLeft(4, '0'));
+                                _builder.Append("\\u" + Convert.ToString(codepoint, 16).PadLeft(4, '0'));
                             }
                             break;
                     }
                 }
 
-                builder.Append('\"');
+                _builder.Append('\"');
             }
 
             void SerializeOther(object value)
@@ -609,7 +608,7 @@ namespace MiniJSON
                     || value is ulong
                     || value is decimal)
                 {
-                    builder.Append(value.ToString());
+                    _builder.Append(value);
                 }
                 else
                 {

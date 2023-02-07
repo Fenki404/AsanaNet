@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -85,7 +83,7 @@ namespace AsanaNet
             {
                 var obj = source[name] as Dictionary<string, object>;
                 value = (T)AsanaObject.Create(typeof(T));
-                Parsing.Deserialize(obj, (value as AsanaObject), host);
+                Deserialize(obj, value, host);
             }
 
             return value;
@@ -110,7 +108,7 @@ namespace AsanaNet
                 for (var i = 0; i < list.Count; ++i)
                 {
                     var newObj = (T)AsanaObject.Create(typeof(T));
-                    Parsing.Deserialize(list[i] as Dictionary<string, object>, (newObj as AsanaObject), host);
+                    Deserialize(list[i] as Dictionary<string, object>, newObj, host);
                     value[i] = newObj;
                 }
             }
@@ -157,9 +155,9 @@ namespace AsanaNet
                         var t = p.PropertyType.IsArray ? p.PropertyType.GetElementType() : p.PropertyType;
                         MethodInfo method = null;
                         if (typeof(AsanaObject).IsAssignableFrom(t))
-                            method = typeof(Parsing).GetMethod(p.PropertyType.IsArray ? "SafeAssignAsanaObjectArray" : "SafeAssignAsanaObject", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(new Type[] { t });
+                            method = typeof(Parsing).GetMethod(p.PropertyType.IsArray ? "SafeAssignAsanaObjectArray" : "SafeAssignAsanaObject", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t);
                         else
-                            method = typeof(Parsing).GetMethod(p.PropertyType.IsArray ? "SafeAssignArray" : "SafeAssign", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(new Type[] { t });
+                            method = typeof(Parsing).GetMethod(p.PropertyType.IsArray ? "SafeAssignArray" : "SafeAssign", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t);
 
                         var methodResult = method.Invoke(null, new object[] { data, ca.Name, host });
 
@@ -230,8 +228,7 @@ namespace AsanaNet
 
                         if (!required)
                             continue;
-                        else
-                            throw new MissingFieldException("Couldn't save object because it was missing a required field: " + property.Name);
+                        throw new MissingFieldException("Couldn't save object because it was missing a required field: " + property.Name);
                     }
 
 
@@ -329,7 +326,7 @@ namespace AsanaNet
             if (properties.Count == 0)
                 return null;
 
-            var requestFields = new Dictionary<string, object>()
+            var requestFields = new Dictionary<string, object>
             {
                 {"opt_fields", string.Join(",", properties)},
             };
@@ -369,10 +366,8 @@ namespace AsanaNet
                     value = pInternal.GetValue(value, new object[] { });
                     return ValidateSerializableValue(ref value, ca, p);
                 }
-                else
-                {
-                    throw new NotImplementedException();
-                }
+
+                throw new NotImplementedException();
             }
 
             return present;

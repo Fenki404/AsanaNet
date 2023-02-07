@@ -5,11 +5,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Authentication;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using AsanaNet.Interfaces;
 using AsanaNet.Services.Interfaces;
 using Newtonsoft.Json;
 
@@ -75,7 +72,7 @@ namespace AsanaNet.Services
             var token = GetToken();
 
             DefaultRequestHeaders.Clear();
-            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue() { NoCache = true };
+            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true };
             DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(_authenticationApiKey ? "Token" : "Bearer", token);
             DefaultRequestHeaders
                 .Accept
@@ -97,7 +94,7 @@ namespace AsanaNet.Services
             var token = GetToken();
 
             DefaultRequestHeaders.Clear();
-            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue() { NoCache = true };
+            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true };
             DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(_authenticationApiKey ? "Token" : "Bearer", token);
             DefaultRequestHeaders
                 .Accept
@@ -133,10 +130,8 @@ namespace AsanaNet.Services
                 var dto = JsonConvert.DeserializeObject<T>(stringResponse);
                 return dto;
             }
-            else
-            {
-                throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
-            }
+
+            throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
         }
 
         private async Task<IEnumerable<T>> GetListRequestAsync<T>(string url, IDictionary<string, string> query = null)
@@ -164,10 +159,8 @@ namespace AsanaNet.Services
 
                 return dto;
             }
-            else
-            {   
-                throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
-            }
+
+            throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
         }
 
 
@@ -197,7 +190,7 @@ namespace AsanaNet.Services
             var nextLink = GetLink(links.FirstOrDefault(x => x.Contains("rel=\"next\"")));
             var lastLink = GetLink(links.FirstOrDefault(x => x.Contains("rel=\"last\"")));
 
-            var result = new MocoPagination()
+            var result = new MocoPagination
             {
                 LastLink = lastLink,
                 NextLink = nextLink,
@@ -230,7 +223,7 @@ namespace AsanaNet.Services
             var token = GetToken();
 
             DefaultRequestHeaders.Clear();
-            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue() { NoCache = true };
+            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true };
             DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(_authenticationApiKey ? "Token" : "Bearer", token);
 
             var content = new StringContent(data, Encoding.UTF8, "application/json");
@@ -241,13 +234,13 @@ namespace AsanaNet.Services
                 var dto = JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
                 return dto;
             }
-            else
-            {
-                throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
-            }
+
+            throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
         }
 
+#pragma warning disable CS1998
         public async Task<T> PostAsync<T>(string url, FileStream fs)
+#pragma warning restore CS1998
         {
             throw new NotImplementedException();
         }
@@ -257,7 +250,7 @@ namespace AsanaNet.Services
             var token = GetToken();
 
             DefaultRequestHeaders.Clear();
-            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue() { NoCache = true };
+            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true };
             DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(_authenticationApiKey ? "Token" : "Bearer", token);
 
             var content = new StringContent(data, Encoding.UTF8, "application/json");
@@ -268,12 +261,8 @@ namespace AsanaNet.Services
                 var dto = JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
                 return dto;
             }
-            else
-            {
-                throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
-            }
 
-            throw new Exception();
+            throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
         }
 
         public async Task<T> PutAsync<T>(string url, FileStream fs)
@@ -281,7 +270,7 @@ namespace AsanaNet.Services
             var token = GetToken();
 
             DefaultRequestHeaders.Clear();
-            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue() { NoCache = true };
+            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true };
             DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(_authenticationApiKey ? "Token" : "Bearer", token);
 
             using var response = await PutAsync(_baseUri + url, new StreamContent(fs));
@@ -290,10 +279,8 @@ namespace AsanaNet.Services
                 var dto = JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
                 return dto;
             }
-            else
-            {
-                throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
-            }
+
+            throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
         }
 
         public async Task<bool> DeleteAsync<T>(string url)
@@ -301,13 +288,11 @@ namespace AsanaNet.Services
             var token = GetToken();
 
             DefaultRequestHeaders.Clear();
-            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue() { NoCache = true };
+            DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true };
             DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(_authenticationApiKey ? "Token" : "Bearer", token);
 
             using var response = await DeleteAsync(_baseUri + url);
             return response.IsSuccessStatusCode;
-
-            throw new Exception();
         }
 
 

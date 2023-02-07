@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace AsanaNet
@@ -68,7 +66,7 @@ namespace AsanaNet
         {
             _lastSave = new Dictionary<string, object>();
 
-            foreach (var property in this.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 var customAttributes = property.GetCustomAttributes(typeof(AsanaDataAttribute), false);
                 if (customAttributes.Length == 0)
@@ -87,7 +85,7 @@ namespace AsanaNet
         }
         public void SetPropertyChanged(string propertyName)
         { 
-            var properties = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var objectProperty = properties.FirstOrDefault(x => x.Name == propertyName);
             if(objectProperty == null) return;
 
@@ -127,7 +125,7 @@ namespace AsanaNet
                 AsanaObject o = (AsanaObject)Activator.CreateInstance(t, true);
                 return o;
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 return null;
             }
@@ -182,7 +180,7 @@ namespace AsanaNet
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((AsanaObject)obj);
         }
 

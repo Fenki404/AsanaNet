@@ -39,7 +39,7 @@ namespace AsanaNet
         [AsanaDataAttribute("team", SerializationFlags.Optional, "ID")] //
         public AsanaTeam Team { get; private set; }
 
-        [AsanaDataAttribute("color", SerializationFlags.Omit)] //
+        [AsanaDataAttribute("color", SerializationFlags.ReadOnly)] //
         public string Color { get; private set; }
 
 

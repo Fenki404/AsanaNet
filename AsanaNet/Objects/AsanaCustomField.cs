@@ -7,15 +7,20 @@ namespace AsanaNet.Objects
     [Serializable]
     public class AsanaCustomField : AsanaObject, IAsanaData, IEquatable<AsanaCustomField>
     {
+        [AsanaData("name", SerializationFlags.Required)]
+        public string Name { get; set; }
+
+
         [AsanaData("resource_type")]
         public string ResourceType { get; private set; }
         
-        [AsanaData("created_by")]
-        public AsanaUser CreatedBy { get; set; }
+        [AsanaData("resource_subtype")]
+        public string ResourceSubtype { get; set; }
+
+        [AsanaData("type")]
+        public string Type { get; set; }
 
 
-        [AsanaData("name", SerializationFlags.Required)]
-        public string Name { get; set; }
 
         [AsanaData("enabled")]
         public bool Enabled { get; set; }
@@ -29,10 +34,14 @@ namespace AsanaNet.Objects
         [AsanaData("format", SerializationFlags.Optional | SerializationFlags.ReadOnly)]
         public string Format { get; set; }
 
-        [AsanaData("number_value")]
-        public int NumberValue { get; set; }
+        [AsanaData("description")]
+        public string Description { get; set; }
 
-        [AsanaData("precision")]
+        [AsanaData("asana_created_field")]
+        public string AsanaCreatedField { get; set; }
+
+
+        [AsanaData("precision", SerializationFlags.Optional | SerializationFlags.ReadOnly))]
         public int Precision { get; set; }
 
 
@@ -42,23 +51,23 @@ namespace AsanaNet.Objects
         [AsanaData("custom_label", SerializationFlags.Optional | SerializationFlags.ReadOnly)]
         public string CustomLabel { get; set; }
 
+        [AsanaData("custom_label_position", SerializationFlags.Optional | SerializationFlags.ReadOnly)]
+        public string CustomLabelPosition { get; set; }
+
+
+
+        [AsanaData("enum_options")]
+        public EnumValue[] EnumOptions { get; set; }
+
+
+        [AsanaData("number_value")]
+        public int NumberValue { get; set; }
+
         [AsanaData("text_value")]
         public string TextValue { get; set; }
 
         [AsanaData("display_value")]
         public string DisplayValue { get; set; }
-
-
-        [AsanaData("resource_subtype")]
-        public string ResourceSubtype { get; set; }
-
-
-        [AsanaData("type")]
-        public string Type { get; set; }
-
-
-        [AsanaData("enum_options")]
-        public EnumValue[] EnumOptions { get; set; }
 
         [AsanaData("enum_value")]
         public EnumValue EnumValue { get; set; }
@@ -71,6 +80,10 @@ namespace AsanaNet.Objects
 
         [AsanaDataAttribute("date_value")]
         public AsanaDateTime DateValue { get; protected set; }
+
+
+        [AsanaData("created_by")]
+        public AsanaUser CreatedBy { get; set; }
 
 
 

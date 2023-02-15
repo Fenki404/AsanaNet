@@ -74,6 +74,12 @@ namespace AsanaNet
         [AsanaDataAttribute("custom_fields")]
         public AsanaCustomField[] CustomFields { get; set; }
 
+        [AsanaDataAttribute("html_notes")]
+        public string HtmlNotes { get; set; }
+
+        [AsanaDataAttribute("permalink_url", SerializationFlags.ReadOnly)]
+        public string PermalinkUrl { get; set; }
+
         // ------------------------------------------------------
 
         //public bool IsObjectLocal { get { return true; } }

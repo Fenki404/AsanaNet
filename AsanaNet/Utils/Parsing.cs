@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web;
@@ -126,50 +127,50 @@ namespace AsanaNet
             if (obj == null)
                 return;
 
-            foreach (var p in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var propertyInfo in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                if (p.Name == "Host")
+                if (propertyInfo.Name == "Host")
                 {
                     if (obj.Host != host)
-                        p.SetValue(obj, host, new object[] { });
+                        propertyInfo.SetValue(obj, host, new object[] { });
                     continue;
                 }
 
                 try
                 {
-                    var cas = p.GetCustomAttributes(typeof(AsanaDataAttribute), false);
-                    if (cas.Length == 0)
+                    var customAttributes = propertyInfo.GetCustomAttributes(typeof(AsanaDataAttribute), false);
+                    if (customAttributes.Length == 0)
                         continue;
 
-                    var ca = cas[0] as AsanaDataAttribute;
+                    var customAttribute = customAttributes[0] as AsanaDataAttribute;
 
-                    if (!data.ContainsKey(ca.Name))
+                    if (!data.ContainsKey(customAttribute.Name))
                         continue;
 
-                    if (p.PropertyType == typeof(string))
+                    if (propertyInfo.PropertyType == typeof(string))
                     {
-                        p.SetValue(obj, SafeAssignString(data, ca.Name), null);
+                        propertyInfo.SetValue(obj, SafeAssignString(data, customAttribute.Name), null);
                     }
                     else
                     {
-                        var t = p.PropertyType.IsArray ? p.PropertyType.GetElementType() : p.PropertyType;
+                        var t = propertyInfo.PropertyType.IsArray ? propertyInfo.PropertyType.GetElementType() : propertyInfo.PropertyType;
                         MethodInfo method = null;
                         if (typeof(AsanaObject).IsAssignableFrom(t))
-                            method = typeof(Parsing).GetMethod(p.PropertyType.IsArray ? "SafeAssignAsanaObjectArray" : "SafeAssignAsanaObject", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t);
+                            method = typeof(Parsing).GetMethod(propertyInfo.PropertyType.IsArray ? "SafeAssignAsanaObjectArray" : "SafeAssignAsanaObject", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t);
                         else
-                            method = typeof(Parsing).GetMethod(p.PropertyType.IsArray ? "SafeAssignArray" : "SafeAssign", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t);
+                            method = typeof(Parsing).GetMethod(propertyInfo.PropertyType.IsArray ? "SafeAssignArray" : "SafeAssign", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t);
 
-                        var methodResult = method.Invoke(null, new object[] { data, ca.Name, host });
+                        var methodResult = method.Invoke(null, new object[] { data, customAttribute.Name, host });
 
                         // this check handle base-class properties
-                        if (p.DeclaringType != obj.GetType())
+                        if (propertyInfo.DeclaringType != obj.GetType())
                         {
-                            var p2 = p.DeclaringType.GetProperty(p.Name);
+                            var p2 = propertyInfo.DeclaringType.GetProperty(propertyInfo.Name);
                             p2.SetValue(obj, methodResult, null);
                         }
                         else
                         {
-                            p.SetValue(obj, methodResult, null);
+                            propertyInfo.SetValue(obj, methodResult, null);
                         }
                     }
                 }
@@ -211,6 +212,7 @@ namespace AsanaNet
                     var writeField = dataAttribute.Flags.HasFlag(SerializationFlags.WriteField);
                     var writeNull = dataAttribute.Flags.HasFlag(SerializationFlags.WriteNull);
                     var dateOnly = dataAttribute.Flags.HasFlag(SerializationFlags.DateOnly);
+                    var argsSuffixFields = dataAttribute.Flags.HasFlag(SerializationFlags.PropertyArgsSuffixFields);
 
                     var value = property.GetValue(obj, new object[] { });
 
@@ -233,7 +235,7 @@ namespace AsanaNet
 
 
 
-                    if (writeField && dataAttribute.Fields.Length == 1)
+                    if (writeField && dataAttribute.Fields.Length == 1 && !argsSuffixFields)
                     {
                         var pInternal = value.GetType().GetProperty(dataAttribute.Fields[0]);
                         if (pInternal != null)
@@ -249,17 +251,30 @@ namespace AsanaNet
                         if (value is AsanaCustomField[] customFields)
                         {
                             var entries = new Dictionary<string, string>();
-
+                  
                             foreach (var cf in customFields)
                             {
-                                if (cf.ResourceSubtype == "text")
-                                    entries.Add(cf.ID.ToString(), cf.TextValue ?? "null");
-                                if (cf.ResourceSubtype == "number")
-                                    entries.Add(cf.ID.ToString(), cf.NumberValue.ToString());
-
-                                if (cf.ResourceSubtype == "enum")
-                                    entries.Add(cf.ID.ToString(), cf.EnumValue?.ID.ToString() ?? "null");
-
+                                switch (cf.ResourceSubtype)
+                                {
+                                    case "text":
+                                        entries.Add(cf.ID.ToString(), cf.TextValue ?? "null");
+                                        break;
+                                    case "number":
+                                        entries.Add(cf.ID.ToString(), cf.NumberValue.ToString());
+                                        break;
+                                    case "date":
+                                        entries.Add(cf.ID.ToString(), cf.DateValue.ToString());
+                                        break;
+                                    case "enum":
+                                        entries.Add(cf.ID.ToString(), cf.EnumValue?.ToJsonString() ?? "null");
+                                        break;
+                                    case "multi_enum":
+                                        entries.Add(cf.ID.ToString(), EnumValue.MultiEnumValueToJsonString(cf.MultiEnumValues) ?? "null");
+                                        break;              
+                                    case "people":
+                                        entries.Add(cf.ID.ToString(), AsanaReference.MultiToJsonString(cf.PeopleValue) ?? "null");
+                                        break;
+                                }
                             }
 
                             dict.Add(dataAttribute.Name, entries);
@@ -297,26 +312,40 @@ namespace AsanaNet
         }
 
 
+        /// <summary>
+        /// Deserializes a dictionary based on AsanaDataAttributes
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public static Dictionary<string, object> SerializePropertiesToArgs(AsanaObject obj)
         {
             var properties = new List<string>();
-
-            foreach (var p in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+ 
+            foreach (var propertyInfo in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 try
                 {
-                    var cas = p.GetCustomAttributes(typeof(AsanaDataAttribute), false);
-                    if (cas.Length == 0)
+                    var customAttributes = propertyInfo.GetCustomAttributes(typeof(AsanaDataAttribute), false);
+                    if (customAttributes.Length == 0)
                         continue;
 
-                    var ca = cas[0] as AsanaDataAttribute;
-                    var omit = ca?.Flags.HasFlag(SerializationFlags.Omit) ?? false;
-                    if (ca == null || omit)
+                    var customAttribute = customAttributes[0] as AsanaDataAttribute;
+
+                    var omit = customAttribute?.Flags.HasFlag(SerializationFlags.Omit) ?? false;
+                    var required = customAttribute.Flags.HasFlag(SerializationFlags.Required);
+                    var argsSuffixFields = customAttribute.Flags.HasFlag(SerializationFlags.PropertyArgsSuffixFields);
+
+                    if (customAttribute == null || omit)
                         continue;
 
-                    var required = ca.Flags.HasFlag(SerializationFlags.Required);
-
-                    properties.Add(ca.Name);
+                    if (argsSuffixFields)
+                    {
+                        properties.AddRange(customAttribute.Fields.Select(field => $"{customAttribute.Name}.{field}"));
+                    }
+                    else
+                    {
+                        properties.Add(customAttribute.Name);
+                    }
                 }
                 catch (Exception)
                 {
@@ -338,6 +367,7 @@ namespace AsanaNet
         internal static bool ValidateSerializableValue(ref object value, AsanaDataAttribute ca, PropertyInfo p)
         {
             var present = true;
+            var argsSuffixFields = ca.Flags.HasFlag(SerializationFlags.PropertyArgsSuffixFields);
 
             // check we're valid -- edge cases first
             if (value == null)
@@ -356,7 +386,7 @@ namespace AsanaNet
             }
             else if (value is AsanaObject _)
             {
-                if (ca.Fields.Length == 1)
+                if (ca.Fields.Length == 1 && !argsSuffixFields)
                 {
                     var pInternal = value.GetType().GetProperty(ca.Fields[0]);
                     if (pInternal == null)

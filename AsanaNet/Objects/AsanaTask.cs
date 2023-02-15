@@ -310,6 +310,10 @@ namespace AsanaNet
         }
 
 
+        [AsanaDataAttribute("memberships", SerializationFlags.PropertyArgsSuffixFields, "project.name", "section.name" )]
+        public AsanaMembership[] Memberships { get; set; }
+
+
         [AsanaDataAttribute("dependents")]
         public AsanaDependent[] Dependents { get; set; }
 
@@ -326,11 +330,19 @@ namespace AsanaNet
         [AsanaDataAttribute("notes")]
         public string Notes { get; set; }
 
+        [AsanaDataAttribute("html_notes")]
+        public string HtmlNotes { get; set; }
+
+        [AsanaDataAttribute("permalink_url", SerializationFlags.ReadOnly)]
+        public string PermalinkUrl { get; set; }
+
         //[AsanaDataAttribute("parent", SerializationFlags.Optional)]
         //public AsanaReference Parent { get; set; }
 
         [AsanaDataAttribute("projects", SerializationFlags.Optional, "ID")]
         public AsanaProject[] Projects { get; set; }
+
+
 
         [AsanaDataAttribute("tags", SerializationFlags.Optional, "ID")]
         public AsanaTag[] Tags { get; protected set; }

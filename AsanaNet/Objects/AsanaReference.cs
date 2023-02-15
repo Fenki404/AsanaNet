@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AsanaNet.Objects
 {
@@ -27,6 +29,19 @@ namespace AsanaNet.Objects
         public void Complete()
         {
             throw new NotImplementedException();
+        }
+
+        public string ToJsonString()
+        {
+            return this.ID.ToString();
+        }
+
+        public static string MultiToJsonString(IEnumerable<AsanaReference> values)
+        {
+            if(values == null) return null;
+ 
+            var ids = values.Select(x => x.ToJsonString());
+            return $"[{string.Join(",", ids)}]";
         }
     }
 }

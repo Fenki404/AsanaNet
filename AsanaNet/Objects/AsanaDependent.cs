@@ -19,7 +19,7 @@ namespace AsanaNet.Objects
             ResourceType = type;
         }
 
-        public bool IsObjectLocal { get { return ID == 0; } }
+        public bool IsObjectLocal => ID == 0;
 
         public void Complete()
         {

@@ -41,7 +41,7 @@ namespace AsanaNet.Objects
         public string AsanaCreatedField { get; set; }
 
 
-        [AsanaData("precision", SerializationFlags.Optional | SerializationFlags.ReadOnly))]
+        [AsanaData("precision", SerializationFlags.Optional | SerializationFlags.ReadOnly)]
         public int Precision { get; set; }
 
 

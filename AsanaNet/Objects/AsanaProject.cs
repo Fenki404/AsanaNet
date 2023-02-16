@@ -74,6 +74,9 @@ namespace AsanaNet
         [AsanaDataAttribute("custom_fields")]
         public AsanaCustomField[] CustomFields { get; set; }
 
+        [AsanaDataAttribute("custom_field_settings", SerializationFlags.Optional | SerializationFlags.ReadOnly | SerializationFlags.PropertyArgsSuffixFields, "custom_field")]
+        public AsanaCustomFieldSetting[] CustomFieldsSetting { get; set; }
+
         [AsanaDataAttribute("html_notes")]
         public string HtmlNotes { get; set; }
 
@@ -239,6 +242,29 @@ namespace AsanaNet
         }
         #endregion
 
+        #region CustomField
+
+        /// <summary>
+        /// Check if the project has a custom field setting
+        /// </summary>
+        /// <param name="customField"></param>
+        /// <returns></returns>
+        public bool HasCustomFieldSetting(AsanaCustomField customField)
+        {
+            return HasCustomFieldSetting(customField.ID);
+        }
+
+        /// <summary>
+        /// Check if the project has a custom field setting
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public bool HasCustomFieldSetting(long id)
+        {
+            return CustomFieldsSetting.Any(x => x.CustomField.ID == id);
+        }
+
+        #endregion
 
         private void CheckHostAndKey()
         {

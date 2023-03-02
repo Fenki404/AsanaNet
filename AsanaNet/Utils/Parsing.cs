@@ -250,7 +250,7 @@ namespace AsanaNet
                     {
                         if (value is AsanaCustomField[] customFields)
                         {
-                            var entries = new Dictionary<string, string>();
+                            var entries = new Dictionary<string, object>();
                   
                             foreach (var cf in customFields)
                             {
@@ -269,10 +269,12 @@ namespace AsanaNet
                                         entries.Add(cf.ID.ToString(), cf.EnumValue?.ToJsonString() ?? "null");
                                         break;
                                     case "multi_enum":
-                                        entries.Add(cf.ID.ToString(), EnumValue.MultiEnumValueToJsonString(cf.MultiEnumValues) ?? "null");
+                                        //entries.Add(cf.ID.ToString(), EnumValue.MultiEnumValueToJsonString(cf.MultiEnumValues) ?? "null");
+                                        entries.Add(cf.ID.ToString(), (object)EnumValue.MultiEnumValueToJsonArray(cf.MultiEnumValues) ?? "null");
                                         break;              
                                     case "people":
-                                        entries.Add(cf.ID.ToString(), AsanaReference.MultiToJsonString(cf.PeopleValue) ?? "null");
+                                        entries.Add(cf.ID.ToString(),
+                                            (object)AsanaReference.MultiToJsonArray(cf.PeopleValue) ?? "null");
                                         break;
                                 }
                             }

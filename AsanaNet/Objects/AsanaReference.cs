@@ -43,5 +43,10 @@ namespace AsanaNet.Objects
             var ids = values.Select(x => x.ToJsonString());
             return $"[{string.Join(",", ids)}]";
         }
+        public static string[] MultiToJsonArray(IEnumerable<AsanaReference> values)
+        {
+            var ids = values?.Select(x => x.ToJsonString());
+            return ids?.ToArray();
+        }
     }
 }

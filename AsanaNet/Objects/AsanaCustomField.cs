@@ -72,10 +72,10 @@ namespace AsanaNet.Objects
         [AsanaData("enum_value")]
         public EnumValue EnumValue { get; set; }
 
-        [AsanaData("multi_enum_values")]
+        [AsanaData("multi_enum_values", SerializationFlags.ReadOnly)]
         public EnumValue[] MultiEnumValues { get; set; }
 
-        [AsanaData("people_value")]
+        [AsanaData("people_value", SerializationFlags.ReadOnly)]
         public AsanaReference[] PeopleValue { get; set; }
 
         [AsanaDataAttribute("date_value")]
@@ -121,6 +121,9 @@ namespace AsanaNet.Objects
             {
                 case "enum":
                     SetEnumValue(value.EnumValue);
+                    break;               
+                case "multi_enum":
+                    SetMultiEnumValue(value.MultiEnumValues);
                     break;
                 case "text":
                     SetTextValue(value.TextValue);
@@ -145,6 +148,18 @@ namespace AsanaNet.Objects
 
             EnumValue = selectedOption;
             DisplayValue = selectedOption.Name;
+            Enabled = true;
+        }      
+        private void SetMultiEnumValue(EnumValue[] values)
+        {
+            if (values == null)
+            {
+                MultiEnumValues = null;
+                DisplayValue = null;
+                return;
+            }
+
+            MultiEnumValues = values;
             Enabled = true;
         }
         private void SetTextValue(string value)

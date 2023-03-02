@@ -49,6 +49,11 @@ namespace AsanaNet.Objects
             return this.ID.ToString();
         }
 
+        public static string[] MultiEnumValueToJsonArray(IEnumerable<EnumValue> values)
+        {
+            var ids = values?.Select(x => x.ToJsonString());
+            return ids?.ToArray();
+        }
         public static string MultiEnumValueToJsonString(IEnumerable<EnumValue> values)
         {
             if(values == null) return null;

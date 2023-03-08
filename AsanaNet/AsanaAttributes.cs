@@ -12,7 +12,8 @@ namespace AsanaNet
         WriteField = 16,
         WriteNull = 32,
         DateOnly = 64,
-        PropertyArgsSuffixFields = 128
+        PropertyArgsSuffixFields = 128,
+        AdditionalPropertyArgsSuffixFields = 256
     }
 
     [AttributeUsage(AttributeTargets.Property)]

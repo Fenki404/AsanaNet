@@ -1,23 +1,27 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web;
 using AsanaNet.Objects;
+using DAL.Extensions;
 
 namespace AsanaNet
 {
     public static class Parsing
     {
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="source"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        static public string SafeAssignString(Dictionary<string, object> source, string name)
+        public static string SafeAssignString(Dictionary<string, object> source, string name)
         {
             if (source.ContainsKey(name))
             {
@@ -34,17 +38,30 @@ namespace AsanaNet
         /// <param name="source"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        static private T SafeAssign<T>(Dictionary<string, object> source, string name, Asana host)
+        private static T SafeAssign<T>(Dictionary<string, object> source, string name, Asana host)
         {
             var converter = TypeDescriptor.GetConverter(typeof(T));
             var value = default(T);
 
             if (source.ContainsKey(name) && source[name] != null)
             {
-                if (converter.CanConvertFrom(typeof(string)) && !string.IsNullOrWhiteSpace(source[name].ToString()))
+                if (source[name] is Dictionary<string, object> dict)
                 {
-                    value = (T)converter.ConvertFromString(source[name].ToString());
+                    var firstValue = dict.First(kv => kv.Value != null);
+                    return ConvertFromString(converter, (string)firstValue.Value, value);
                 }
+
+                var stringValue = source[name].ToString();
+                value = ConvertFromString(converter, stringValue, value);
+            }
+            return value;
+        }
+
+        private static T ConvertFromString<T>(TypeConverter converter, string stringValue, T value)
+        {
+            if (converter.CanConvertFrom(typeof(string)) && !string.IsNullOrWhiteSpace(stringValue))
+            {
+                value = (T)converter.ConvertFromString(stringValue);
             }
 
             return value;
@@ -57,7 +74,7 @@ namespace AsanaNet
         /// <param name="source"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        static private T[] SafeAssignArray<T>(Dictionary<string, object> source, string name, Asana host)
+        private static T[] SafeAssignArray<T>(Dictionary<string, object> source, string name, Asana host)
         {
             T[] value = null;
 
@@ -76,7 +93,7 @@ namespace AsanaNet
         /// <param name="source"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        static private AsanaObject SafeAssignAsanaObject<T>(Dictionary<string, object> source, string name, Asana host) where T : AsanaObject
+        private static AsanaObject SafeAssignAsanaObject<T>(Dictionary<string, object> source, string name, Asana host) where T : AsanaObject
         {
             T value = null;
 
@@ -97,7 +114,7 @@ namespace AsanaNet
         /// <param name="source"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        static private T[] SafeAssignAsanaObjectArray<T>(Dictionary<string, object> source, string name, Asana host) where T : AsanaObject
+        private static T[] SafeAssignAsanaObjectArray<T>(Dictionary<string, object> source, string name, Asana host) where T : AsanaObject
         {
             T[] value = null;
 
@@ -127,7 +144,9 @@ namespace AsanaNet
             if (obj == null)
                 return;
 
-            foreach (var propertyInfo in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            var objectType = obj.GetType();
+            var objectProperties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var propertyInfo in objectProperties)
             {
                 if (propertyInfo.Name == "Host")
                 {
@@ -153,17 +172,21 @@ namespace AsanaNet
                     }
                     else
                     {
-                        var t = propertyInfo.PropertyType.IsArray ? propertyInfo.PropertyType.GetElementType() : propertyInfo.PropertyType;
+                        var typeOfProperty = propertyInfo.PropertyType.IsArray ? propertyInfo.PropertyType.GetElementType() : propertyInfo.PropertyType;
                         MethodInfo method = null;
-                        if (typeof(AsanaObject).IsAssignableFrom(t))
-                            method = typeof(Parsing).GetMethod(propertyInfo.PropertyType.IsArray ? "SafeAssignAsanaObjectArray" : "SafeAssignAsanaObject", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t);
+
+                        //if(objectType == typeof(AsanaCustomField) && typeOfProperty == typeof(AsanaDateTime))
+                        //    Debug.WriteLine("AsanaDateTime");
+
+                        if (typeof(AsanaObject).IsAssignableFrom(typeOfProperty))
+                            method = typeof(Parsing).GetMethod(propertyInfo.PropertyType.IsArray ? "SafeAssignAsanaObjectArray" : "SafeAssignAsanaObject", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(typeOfProperty);
                         else
-                            method = typeof(Parsing).GetMethod(propertyInfo.PropertyType.IsArray ? "SafeAssignArray" : "SafeAssign", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t);
+                            method = typeof(Parsing).GetMethod(propertyInfo.PropertyType.IsArray ? "SafeAssignArray" : "SafeAssign", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(typeOfProperty);
 
                         var methodResult = method.Invoke(null, new object[] { data, customAttribute.Name, host });
 
                         // this check handle base-class properties
-                        if (propertyInfo.DeclaringType != obj.GetType())
+                        if (propertyInfo.DeclaringType != objectType)
                         {
                             var p2 = propertyInfo.DeclaringType.GetProperty(propertyInfo.Name);
                             p2.SetValue(obj, methodResult, null);
@@ -189,7 +212,7 @@ namespace AsanaNet
         /// <param name="asString"></param>
         /// <param name="dirtyOnly"></param>
         /// <param name="onWrite"></param>
-        static internal Dictionary<string, object> Serialize(AsanaObject obj, bool asString, bool dirtyOnly, bool onWrite = false)
+        internal static Dictionary<string, object> Serialize(AsanaObject obj, bool asString, bool dirtyOnly, bool onWrite = false)
         {
             var dict = new Dictionary<string, object>();
 
@@ -263,7 +286,27 @@ namespace AsanaNet
                                         entries.Add(cf.ID.ToString(), cf.NumberValue.ToString());
                                         break;
                                     case "date":
-                                        entries.Add(cf.ID.ToString(), cf.DateValue.ToString());
+                                        if (cf.DateValue != null)
+                                        {
+                                            if (cf.DateValue.DateTime.IsDateOnly())
+                                            {
+                                                var dateObj = new { date = cf.DateValue.ToDateString() };
+                                                entries.Add(cf.ID.ToString(), dateObj);
+                                            }
+                                            else
+                                            {
+                                                var dateObj = new
+                                                {
+                                                    date = cf.DateValue.ToDateString(),
+                                                    date_time = cf.DateValue.ToString()
+                                                };
+                                                entries.Add(cf.ID.ToString(), dateObj);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            entries.Add(cf.ID.ToString(), "null");
+                                        }
                                         break;
                                     case "enum":
                                         entries.Add(cf.ID.ToString(), cf.EnumValue?.ToJsonString() ?? "null");
@@ -293,15 +336,11 @@ namespace AsanaNet
                     }
                     else if (value is AsanaDateTime asanaDate && dateOnly)
                     {
-                        var quotedString = HttpUtility.JavaScriptStringEncode(asanaDate.ToDateString());
-                        var valueOrString = asString ? quotedString : value;
-                        dict.Add(dataAttribute.Name, valueOrString);
+                        AddAsanaDateOnly(asString, asanaDate, value, dict, dataAttribute.Name);
                     }
                     else
                     {
-                        var quotedString = HttpUtility.JavaScriptStringEncode(value.ToString());
-                        var valueOrString = asString ? quotedString : value;
-                        dict.Add(dataAttribute.Name, valueOrString);
+                        AddAsanaDateTime(asString, value, dict, dataAttribute.Name);
                     }
                 }
                 catch (Exception e)
@@ -311,6 +350,21 @@ namespace AsanaNet
             }
 
             return dict;
+        }
+
+        private static void AddAsanaDateOnly(bool asString, AsanaDateTime asanaDate, object value, IDictionary<string, object> dict,
+            string attributeName)
+        {
+            var quotedString = HttpUtility.JavaScriptStringEncode(asanaDate.ToDateString());
+            var valueOrString = asString ? quotedString : value;
+            dict.Add(attributeName, valueOrString);
+        }
+
+        private static void AddAsanaDateTime(bool asString, object value, IDictionary<string, object> dict, string attributeName)
+        {
+            var quotedString = HttpUtility.JavaScriptStringEncode(value.ToString());
+            var valueOrString = asString ? quotedString : value;
+            dict.Add(attributeName, valueOrString);
         }
 
 
@@ -336,6 +390,7 @@ namespace AsanaNet
                     var omit = customAttribute?.Flags.HasFlag(SerializationFlags.Omit) ?? false;
                     var required = customAttribute.Flags.HasFlag(SerializationFlags.Required);
                     var argsSuffixFields = customAttribute.Flags.HasFlag(SerializationFlags.PropertyArgsSuffixFields);
+                    var additionalArgsSuffixFields = customAttribute.Flags.HasFlag(SerializationFlags.AdditionalPropertyArgsSuffixFields);
 
                     if (customAttribute == null || omit)
                         continue;
@@ -347,6 +402,7 @@ namespace AsanaNet
                     else
                     {
                         properties.Add(customAttribute.Name);
+                        if(additionalArgsSuffixFields) properties.AddRange(customAttribute.Fields.Select(field => $"{customAttribute.Name}.{field}"));
                     }
                 }
                 catch (Exception)

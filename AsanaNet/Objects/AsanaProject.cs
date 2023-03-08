@@ -12,39 +12,39 @@ namespace AsanaNet
         private AsanaDateTime _startOn;
         private AsanaDateTime _dueOn;
 
-        [AsanaDataAttribute("name", SerializationFlags.Required)] //
+        [AsanaData("name", SerializationFlags.Required)] //
         public string Name { get; set; }
 
-        [AsanaDataAttribute("created_at", SerializationFlags.Omit)] //
+        [AsanaData("created_at", SerializationFlags.Omit)] //
         public AsanaDateTime CreatedAt { get; private set; }
 
-        [AsanaDataAttribute("modified_at", SerializationFlags.Omit)] //
+        [AsanaData("modified_at", SerializationFlags.Omit)] //
         public AsanaDateTime ModifiedAt { get; private set; }
 
-        [AsanaDataAttribute("notes")] //
+        [AsanaData("notes")] //
         public string Notes { get; set; }
 
-        [AsanaDataAttribute("archived", SerializationFlags.Omit)] //
+        [AsanaData("archived", SerializationFlags.Omit)] //
         public bool Archived { get; private set; }
 
-        [AsanaDataAttribute("workspace", SerializationFlags.Optional, "ID")] //
+        [AsanaData("workspace", SerializationFlags.Optional, "ID")] //
         public AsanaWorkspace Workspace { get; private set; }
 
-        [AsanaDataAttribute("members", SerializationFlags.Optional | SerializationFlags.ReadOnly)] //
+        [AsanaData("members", SerializationFlags.Optional | SerializationFlags.ReadOnly)] //
         public AsanaUser[] Members { get; private set; }
 
-        [AsanaDataAttribute("followers", SerializationFlags.Optional | SerializationFlags.ReadOnly)] //
+        [AsanaData("followers", SerializationFlags.Optional | SerializationFlags.ReadOnly)] //
         public AsanaUser[] Followers { get; private set; }
 
-        [AsanaDataAttribute("team", SerializationFlags.Optional, "ID")] //
+        [AsanaData("team", SerializationFlags.Optional, "ID")] //
         public AsanaTeam Team { get; private set; }
 
-        [AsanaDataAttribute("color", SerializationFlags.ReadOnly)] //
+        [AsanaData("color", SerializationFlags.ReadOnly)] //
         public string Color { get; private set; }
 
 
 
-        [AsanaDataAttribute("start_on", SerializationFlags.Optional | SerializationFlags.DateOnly)]
+        [AsanaData("start_on", SerializationFlags.Optional | SerializationFlags.DateOnly)]
         public AsanaDateTime StartOn
         {
             get => _startOn;
@@ -63,7 +63,7 @@ namespace AsanaNet
                 }
             }
         }
-        [AsanaDataAttribute("due_on", SerializationFlags.Optional | SerializationFlags.DateOnly)]
+        [AsanaData("due_on", SerializationFlags.Optional | SerializationFlags.DateOnly)]
         public AsanaDateTime DueOn
         {
             get => _dueOn;
@@ -71,16 +71,16 @@ namespace AsanaNet
         }
 
 
-        [AsanaDataAttribute("custom_fields")]
+        [AsanaData("custom_fields")]
         public AsanaCustomField[] CustomFields { get; set; }
 
-        [AsanaDataAttribute("custom_field_settings", SerializationFlags.Optional | SerializationFlags.ReadOnly | SerializationFlags.PropertyArgsSuffixFields, "custom_field")]
+        [AsanaData("custom_field_settings", SerializationFlags.Optional | SerializationFlags.ReadOnly | SerializationFlags.PropertyArgsSuffixFields, "custom_field")]
         public AsanaCustomFieldSetting[] CustomFieldsSetting { get; set; }
 
-        [AsanaDataAttribute("html_notes")]
+        [AsanaData("html_notes")]
         public string HtmlNotes { get; set; }
 
-        [AsanaDataAttribute("permalink_url", SerializationFlags.ReadOnly)]
+        [AsanaData("permalink_url", SerializationFlags.ReadOnly)]
         public string PermalinkUrl { get; set; }
 
         // ------------------------------------------------------
@@ -128,7 +128,8 @@ namespace AsanaNet
 
         public new static Dictionary<string, object> SerializePropertiesToArgs()
         {
-            return Parsing.SerializePropertiesToArgs(new AsanaProject());
+            var result = Parsing.SerializePropertiesToArgs(new AsanaProject());
+            return result;
         }
 
         public override async Task RefreshAsync(Asana host = null)

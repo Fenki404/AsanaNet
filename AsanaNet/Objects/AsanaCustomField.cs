@@ -78,8 +78,8 @@ namespace AsanaNet.Objects
         [AsanaData("people_value", SerializationFlags.ReadOnly)]
         public AsanaReference[] PeopleValue { get; set; }
 
-        [AsanaDataAttribute("date_value")]
-        public AsanaDateTime DateValue { get; protected set; }
+        [AsanaData("date_value")]
+        public AsanaDateTime DateValue { get; set; }
 
 
         [AsanaData("created_by")]
@@ -131,6 +131,12 @@ namespace AsanaNet.Objects
                 case "number":
                     SetNumberValue(value.NumberValue);
                     break;
+                case "date":
+                    SetDateValue(value.DateValue);
+                    break;
+                case "people":
+                    SetPeopleValue(value.PeopleValue);
+                    break;
             }
 
         }
@@ -170,6 +176,16 @@ namespace AsanaNet.Objects
         private void SetNumberValue(int value)
         {
             NumberValue = value;
+            Enabled = true;
+        }
+        private void SetDateValue(AsanaDateTime value)
+        {
+            DateValue = value;
+            Enabled = true;
+        }
+        private void SetPeopleValue(AsanaReference[] value)
+        {
+            PeopleValue = value;
             Enabled = true;
         }
 

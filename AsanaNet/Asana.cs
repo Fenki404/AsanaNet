@@ -70,6 +70,7 @@ namespace AsanaNet
         }
 
         public string LastPayload { get; private set; }
+        public string LastResponse { get; set; }
 
         #endregion        
 

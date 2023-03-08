@@ -1,6 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Text.Json;
+using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AsanaNet
 {
@@ -19,7 +22,13 @@ namespace AsanaNet
         {
             DateTime = dt;
         }
+        public string ToJsonString()
+        {
+            object obj = new { date = DateTime.ToString("yyyy-MM-dd")};
 
+            var jsonString = JsonSerializer.Serialize(obj);
+            return jsonString; //DateTime.ToString("yyyy-MM-dd");
+        }
         public string ToDateString()
         {
             return DateTime.ToString("yyyy-MM-dd");

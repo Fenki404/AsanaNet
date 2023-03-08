@@ -112,7 +112,8 @@ namespace AsanaNet
                            Go(callback, error);
                            return;
                        }
-                       string responseContent = GetResponseContent(result);
+                       var responseContent = GetResponseContent(result);
+                       _host.LastResponse = _responseFromServer = responseContent;
                        _callback(responseContent, result.Headers);
                    }
             );
@@ -161,6 +162,8 @@ namespace AsanaNet
                     };
 
                     var responseFromServer = await reader.ReadToEndAsync();
+                    _host.LastResponse = _responseFromServer = responseFromServer;
+
                     var responseObject = JsonConvert.DeserializeAnonymousType(responseFromServer, definition);
 
                     if (responseObject.errors != null)
@@ -229,6 +232,8 @@ namespace AsanaNet
             };
 
             var responseFromServer = await reader.ReadToEndAsync();
+            _host.LastResponse = _responseFromServer = responseFromServer;
+
             try
             {
                 var jsonObj = JToken.Parse(responseFromServer);
@@ -311,6 +316,7 @@ namespace AsanaNet
                 {
                     using var reader = new StreamReader(dataStream);
                     _responseFromServer = await reader.ReadToEndAsync();
+                    _host.LastResponse = _responseFromServer;
                     var result = PackAndSendResponseCollection<TAsanaObject>(_responseFromServer);
 
                     resultCollection = result.Item1;

@@ -17,7 +17,7 @@ namespace AsanaNet
     [Serializable]
     public class AsanaTask : BaseAsanaTask
     {
-        [AsanaDataAttribute("parent", SerializationFlags.ReadOnly)]
+        [AsanaData("parent", SerializationFlags.ReadOnly)]
         public AsanaReference Parent { get; set; }
 
         public AsanaTask()
@@ -110,7 +110,7 @@ namespace AsanaNet
     [Serializable]
     public class SaveAsanaTask : BaseAsanaTask
     {
-        [AsanaDataAttribute("parent")]
+        [AsanaData("parent")]
         public string Parent { get; set; }
 
 
@@ -205,29 +205,29 @@ namespace AsanaNet
         //[AsanaDataAttribute("resource_type", SerializationFlags.Required)]
         //public string ResourceType => AsanaNet.Objects.ResourceType.Project;
 
-        [AsanaDataAttribute("name", SerializationFlags.Required)]
+        [AsanaData("name", SerializationFlags.Required)]
         public string Name { get; set; }
 
-        [AsanaDataAttribute("assignee", SerializationFlags.Optional | SerializationFlags.WriteNull, "ID")]
+        [AsanaData("assignee", SerializationFlags.Optional | SerializationFlags.WriteNull, "ID")]
         public AsanaUser Assignee { get; set; }
 
-        [AsanaDataAttribute("assignee_status", SerializationFlags.Omit)]
+        [AsanaData("assignee_status", SerializationFlags.Omit)]
         public AssigneeStatus AssigneeStatus { get; set; }
 
-        [AsanaDataAttribute("created_at", SerializationFlags.Omit)]
+        [AsanaData("created_at", SerializationFlags.Omit)]
         public AsanaDateTime CreatedAt { get; protected set; }
 
-        [AsanaDataAttribute("completed")]
+        [AsanaData("completed")]
         public bool? Completed { get; set; }
 
-        [AsanaDataAttribute("completed_at", SerializationFlags.Omit)]
+        [AsanaData("completed_at", SerializationFlags.Omit)]
         public AsanaDateTime CompletedAt { get; protected set; }
 
-        [AsanaDataAttribute("num_subtasks", SerializationFlags.ReadOnly)]
+        [AsanaData("num_subtasks", SerializationFlags.ReadOnly)]
         public int SubTaskCount { get; set; }
 
 
-        [AsanaDataAttribute("start_on", SerializationFlags.ReadOnly)]
+        [AsanaData("start_on", SerializationFlags.ReadOnly)]
         public AsanaDateTime StartOn
         {
             get => _startOn;
@@ -248,7 +248,7 @@ namespace AsanaNet
             }
         }
 
-        [AsanaDataAttribute("start_at")]
+        [AsanaData("start_at")]
         public AsanaDateTime StartAt
         {
             get => _startAt;
@@ -270,14 +270,14 @@ namespace AsanaNet
         }
 
 
-        [AsanaDataAttribute("due_on", SerializationFlags.ReadOnly)]
+        [AsanaData("due_on", SerializationFlags.ReadOnly)]
         public AsanaDateTime DueOn
         {
             get => _dueOn;
             set => _dueOn = value;
         }
 
-        [AsanaDataAttribute("due_at")]
+        [AsanaData("due_at")]
         public AsanaDateTime DueAt
         {
             get => _dueAt;
@@ -310,48 +310,48 @@ namespace AsanaNet
         }
 
 
-        [AsanaDataAttribute("memberships", SerializationFlags.PropertyArgsSuffixFields, "project.name", "section.name" )]
+        [AsanaData("memberships", SerializationFlags.PropertyArgsSuffixFields, "project.name", "section.name" )]
         public AsanaMembership[] Memberships { get; set; }
 
 
-        [AsanaDataAttribute("dependents")]
+        [AsanaData("dependents")]
         public AsanaDependent[] Dependents { get; set; }
 
-        [AsanaDataAttribute("dependencies")]
+        [AsanaData("dependencies")]
         public AsanaDependent[] Dependencies { get; set; }
 
 
-        [AsanaDataAttribute("followers", SerializationFlags.Optional, "ID")]
+        [AsanaData("followers", SerializationFlags.Optional, "ID")]
         public AsanaUser[] Followers { get; set; }
 
-        [AsanaDataAttribute("modified_at", SerializationFlags.ReadOnly)]
+        [AsanaData("modified_at", SerializationFlags.ReadOnly)]
         public AsanaDateTime ModifiedAt { get; protected set; }
 
-        [AsanaDataAttribute("notes")]
+        [AsanaData("notes")]
         public string Notes { get; set; }
 
-        [AsanaDataAttribute("html_notes")]
+        [AsanaData("html_notes")]
         public string HtmlNotes { get; set; }
 
-        [AsanaDataAttribute("permalink_url", SerializationFlags.ReadOnly)]
+        [AsanaData("permalink_url", SerializationFlags.ReadOnly)]
         public string PermalinkUrl { get; set; }
 
         //[AsanaDataAttribute("parent", SerializationFlags.Optional)]
         //public AsanaReference Parent { get; set; }
 
-        [AsanaDataAttribute("projects", SerializationFlags.Optional, "ID")]
+        [AsanaData("projects", SerializationFlags.Optional, "ID")]
         public AsanaProject[] Projects { get; set; }
 
 
 
-        [AsanaDataAttribute("tags", SerializationFlags.Optional, "ID")]
+        [AsanaData("tags", SerializationFlags.Optional, "ID")]
         public AsanaTag[] Tags { get; protected set; }
 
-        [AsanaDataAttribute("workspace", SerializationFlags.Required, "ID")]
+        [AsanaData("workspace", SerializationFlags.Required, "ID")]
         public AsanaWorkspace Workspace { get; protected set; }
 
 
-        [AsanaDataAttribute("custom_fields")]
+        [AsanaData("custom_fields")]
         public AsanaCustomField[] CustomFields { get; set; }
 
         // ------------------------------------------------------
